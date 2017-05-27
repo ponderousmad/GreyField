@@ -10,7 +10,7 @@ var GREY = (function () {
         this.batch = new BLIT.Batch("images/", function () {
             self.processLevels();
         });
-        this.image = this.batch.load("normalspace.png");
+        this.image = this.batch.load("grey_square.png");
         this.batch.commit();
 
         this.space = null;
@@ -69,7 +69,7 @@ var GREY = (function () {
 
     SpaceView.prototype.update = function (now, elapsed, keyboard, pointer) {
         if (this.space) {
-            //this.space.update()
+            this.space.update(elapsed, 1);
         }
     };
 
