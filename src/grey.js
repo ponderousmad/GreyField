@@ -16,11 +16,13 @@ var GREY = (function () {
         this.updateInDraw = true;
 
         this.levels = [
+            new Level({resource: "simple.png", shipX: 150, shipY: 200 }),
             new Level({resource: "normalspace.png", shipX: 50, shipY: 50 }),
             new Level({resource: "grey_square.png", shipX: 80, shipY: 50 }),
             new Level({resource: "wells.png", shipX: 100, shipY: 100 }),
             new Level({resource: "ring.png", shipX: 320, shipY: 200 }),
-            new Level({resource: "cloud.png", shipX: 100, shipY: 100 })
+            new Level({resource: "cloud.png", shipX: 100, shipY: 100 }),
+            new Level({resource: "spiral.png", shipX: 100, shipY: 100 })
         ];
 
         var self = this;
@@ -46,7 +48,7 @@ var GREY = (function () {
                 self.loadLevel(parseInt(self.levelSelect.value));
             }, true);
             for (var l = 0, self = this ; l < this.levels.length; ++l) {
-                self.levelSelect.appendChild(new Option("Level " + l, l));
+                self.levelSelect.appendChild(new Option(this.levels[l].resource.slice(0, -4), l));
             }
         }
     };
