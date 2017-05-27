@@ -9,7 +9,7 @@ var FIELD = (function () {
         this.grads = new Float32Array(size * 2);
         this.particles = [];
 
-        this.ship = new Ship(100, 10, 45, 0.04, new R2.V(50,50));
+        this.ship = new Ship(10, new R2.V(50, 50), 0.5, 45, 0.04);
         this.gravity = 0.001;
     }
 
@@ -63,47 +63,53 @@ var FIELD = (function () {
 
     }
 
-    Space.prototype.update = function(updateTime,numPhysicsSteps,isShooting,shotAngle) {
-        var physicsTime = updateTime / numPhysicsSteps;
+    Space.prototype.update = function(updateTime, stepCount, isShooting, shotAngle) {
+        var physicsTime = updateTime / stepCount;
         
-        if(isShooting) {
-            this.ship.shoot(shotAngle,this);
+        if (isShooting) {
+            this.ship.shoot(shotAngle, this);
         }
 
         this.ship.timestep(this,physicsTime);
         for (var i = 0; i < this.particles.length; ++i) {
-            this.particles[i].timestep(this,physicsTime);
+            this.particles[i].timestep(this, physicsTime);
         }
     }
     
-    function Ship (total_mass,empty_mass,particle_number,ejection_velocity,starting_position) {
+    function Ship (shipMass, position, particleMass, particleCount, particleVelocity) {
         //constants:
-        this.total_mass = total_mass;
-        this.empty_mass = empty_mass;
-        this.m_particle = (total_mass - empty_mass)/particle_number;
-        this.v_particle = ejection_velocity;
+        this.shipMass = shipMass;
+        this.particleMass = particleMass;
+        this.particleVelocity = particleVelocity;
         
         //variables:
-        this.pos = starting_position;
-        this.vel = new R2.V(0,0);
-        this.mass = total_mass;
+        this.particleCount = particleCount;
+        this.pos = position;
+        this.vel = new R2.V(0, 0);
         this.energy = 0;
     }
+
+    Ship.prototype.mass = function () {
+        return this.shipMass + this.particleCount * this.particleMass;
+    };
     
-    Ship.prototype.shoot = function(theta,space) {
+    Ship.prototype.shoot = function (theta, space) {
+        if (this.particleCount <= 0) {
+            return;
+        }
         this.vel.addScaled(
             new R2.V(Math.cos(theta), Math.sin(theta)),
-            this.v_particle * this.m_particle / this.mass
+            this.particleVelocity * this.particleMass / this.mass()
         );
-        
-        this.mass -= this.m_particle;
-        
-        var particle_velocity = new R2.V(Math.cos(theta),Math.sin(theta));
-        particle_velocity.scale(this.vel.length() - this.v_particle);
-        space.particles.push(new Particle(this.mass, this.pos.clone(), particle_velocity));
+
+        this.particleCount -= 1;
+
+        var velocity = new R2.V(Math.cos(theta), Math.sin(theta));
+        velocity.scale(this.vel.length() - this.particleVelocity);
+        space.particles.push(new Particle(this.particleMass, this.pos.clone(), velocity));
     }
 
-    Ship.prototype.timestep = function(space,time) {
+    Ship.prototype.timestep = function(space, time) {
         if(this.vel.length() * time < 1) {
             var accel = space.closestGradient(this.pos);
             accel.scale(space.gravity);
