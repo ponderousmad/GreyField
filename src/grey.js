@@ -81,6 +81,12 @@ var GREY = (function () {
         if (this.space) {
             BLIT.draw(context, this.xGrad, this.space.width, 0, BLIT.ALIGN.TopLeft);
             BLIT.draw(context, this.yGrad, 0, this.space.height, BLIT.ALIGN.TopLeft);
+
+            context.fillStyle = "red";
+            context.beginPath();
+            var shipPos = new R2.V(100, 100);//this.space.ship.pos;
+            context.arc(shipPos.x, shipPos.y, 5, 0, 2*Math.PI);
+            context.fill();
         }
     };
 
