@@ -12,6 +12,7 @@ var FIELD = (function () {
         this.potentials = new Float32Array(size);
         this.grads = new Float32Array(size * 2);
         this.particles = [];
+        this.fuels = [];
         this.gravity = 0.005;
         this.ship = null;
     }
@@ -117,6 +118,8 @@ var FIELD = (function () {
         this.pos = position;
         this.vel = new R2.V(0, 0);
         this.calcEnergy(space);
+        this.radius = 5;
+        this.usesFuel = true;
     }
 
     Ship.prototype.mass = function () {
@@ -125,6 +128,7 @@ var FIELD = (function () {
 
     Ship.prototype.calcEnergy = function(space){
         this.energy = 0.5 * this.vel.lengthSq() + space.closestPotential(new R2.V(this.pos.y,this.pos.x)) * space.gravity;
+        this.energy *= this.mass;
     }
     
     Ship.prototype.shoot = function (theta, space) {
@@ -171,7 +175,20 @@ var FIELD = (function () {
             this.timestep(space,0.5*time);
             this.timestep(space,0.5*time);
         }
-        var finalPotential = space.closestPotential(new R2.V(this.pos.y,this.pos.x)) * space.gravity;
+
+        for(var i = 0; i < space.fuels.length; i++){
+            var fuel = space.fuels[i],
+                distance = R2.addVectors(this.pos, fuel.pos.scaled(-1));
+            if(distance.lengthSq() < this.size * this.size + fuel.size * fuel.size) {
+                space.fuels.splice(i,1);
+                this.mass += fuel.mass;
+                this.particleCount += fuel.mass/this.particleMass;
+                this.particleVelocity += fuel.boost;
+                this.energy += fuel.mass * Math.max(space.closestPotential(new R2.V(this.pos.y,this.pos.x)), space.closestPotential(new R2.V(fuel.pos.y,fuel.pos.x))) * space.gravity;
+            }
+        }
+
+        var finalPotential = this.mass * space.closestPotential(new R2.V(this.pos.y,this.pos.x)) * space.gravity;
         if(finalPotential > this.energy) {
             this.vel.scale(0);
         } else {
@@ -187,7 +204,16 @@ var FIELD = (function () {
         this.mass = function () {return mass; };
         this.pos = position;
         this.vel = velocity;
+        this.radius = 2;
         this.energy = 0.5 * this.vel.lengthSq() + space.closestPotential(new R2.V(this.pos.y,this.pos.x)) * space.gravity;
+        this.usesFuel = false;
+    }
+
+    function Fuel(mass,position,boost) {
+        this.pos = position;
+        this.mass = mass;
+        this.size = 5;
+        this.boost = boost || 0;
     }
 
     Particle.prototype.timestep = Ship.prototype.timestep;
