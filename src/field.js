@@ -5,7 +5,7 @@ var FIELD = (function () {
         return (x % 1) * a + (1-(x % 1)) * b;
     }
 
-    function Space(width, height) {
+    function Space(width, height, shipPosition) {
         this.width = width;
         this.height = height;
         var size = width * height;
@@ -13,7 +13,7 @@ var FIELD = (function () {
         this.grads = new Float32Array(size * 2);
         this.particles = [];
 
-        this.ship = new Ship(2, new R2.V(50, 50), 2, 5, 0.1, this);
+        this.ship = new Ship(2, shipPosition, 2, 5, 0.1, this);
         this.gravity = 0.005;
     }
 
