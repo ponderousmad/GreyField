@@ -1,20 +1,53 @@
 var GREY = (function () {
     "use strict";
 
+    function Level(data) {
+        this.resource = data.resource;
+        this.image = null;
+        this.shipPosition = new R2.V(data.shipX, data.shipY);
+    }
+
+    Level.prototype.batch = function(batch) {
+        this.image = batch.load(this.resource);
+    };
+
     function SpaceView() {
         this.maximize = true;
         this.updateInDraw = true;
 
+        this.levels = [
+            new Level({resource: "normalspace.png", shipX: 50, shipY: 50 }),
+            new Level({resource: "grey_square.png", shipX: 50, shipY: 50 }),
+            new Level({resource: "wells.png", shipX: 50, shipY: 50 })
+        ];
+
         var self = this;
 
         this.batch = new BLIT.Batch("images/", function () {
-            self.processLevels();
+            self.loadLevel(0);
         });
-        this.image = this.batch.load("normalspace.png");
+        for (var l = 0; l < this.levels.length; ++l) {
+            this.levels[l].batch(this.batch);
+        }
         this.batch.commit();
 
         this.space = null;
+        this.level = null;
+
+        this.setupControls();
     }
+
+    SpaceView.prototype.setupControls = function () {
+        this.levelSelect = document.getElementById("selectLevel");
+        if (this.levelSelect) {
+            this.levelSelect.addEventListener("change", function (e) {
+                self.loadLevel(parseInt(self.levelSelect.value));
+            }, true);
+            for (var l = 0, self = this ; l < this.levels.length; ++l) {
+                self.levelSelect.appendChild(new Option("Level " + l, l));
+            }
+        }
+    };
 
     function canvasMatching(image) {
         var canvas = document.createElement('canvas');
@@ -51,15 +84,17 @@ var GREY = (function () {
         return gradToPixel(space.gradient(x, y).y);
     }
 
-    SpaceView.prototype.processLevels = function () {
-        var space =  new FIELD.Space(this.image.width, this.image.height);
-        IMPROC.processImage(this.image, 0, 0, this.image.width, this.image.height, function (x, y, r, g, b, a) {
+    SpaceView.prototype.loadLevel = function (index) {
+        this.level = this.levels[index];
+        var image = this.level.image,
+            space = new FIELD.Space(image.width, image.height);
+        IMPROC.processImage(image, 0, 0, image.width, image.height, function (x, y, r, g, b, a) {
             space.setPotential(x, y, r / IMPROC.BYTE_MAX);
         });
         space.computeGrads();
 
-        this.xGrad = canvasMatching(this.image);
-        this.yGrad = canvasMatching(this.image);
+        this.xGrad = canvasMatching(image);
+        this.yGrad = canvasMatching(image);
 
         drawGradient(space, this.xGrad, xGradToPixel);
         drawGradient(space, this.yGrad, yGradToPixel);
@@ -93,16 +128,16 @@ var GREY = (function () {
         if (this.space) {
             var xOffset = Math.floor((width - this.space.width) * 0.5),
                 yOffset = Math.floor((height - this.space.height) * 0.5);
-            if (this.batch.loaded) {
-                BLIT.draw(context, this.image, xOffset, yOffset, BLIT.ALIGN.TopLeft);
+            if (this.level) {
+                BLIT.draw(context, this.level.image, xOffset, yOffset, BLIT.ALIGN.TopLeft);
             }
 
             BLIT.draw(context, this.xGrad, xOffset + this.space.width, yOffset, BLIT.ALIGN.TopLeft);
             BLIT.draw(context, this.yGrad, xOffset, yOffset + this.space.height, BLIT.ALIGN.TopLeft);
 
+            var shipPos = this.space.ship.pos;
             context.fillStyle = "green";
             context.beginPath();
-            var shipPos = this.space.ship.pos;
             context.arc(shipPos.x + xOffset, shipPos.y + yOffset, 5, 0, 2*Math.PI);
             context.fill();
 
