@@ -71,7 +71,7 @@ var FIELD = (function () {
         }
 
         this.ship.timestep(this,physicsTime);
-        for (int i = 0; i < this.particles.length; ++i) {
+        for (var i = 0; i < this.particles.length; ++i) {
             particles[i].timestep(this,physicsTime);
         }
     }
