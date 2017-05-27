@@ -1,5 +1,41 @@
 var FIELD = (function () {
     "use strict";
+
+    function Space(width, height) {
+        this.width = width;
+        this.height = height;
+        var size = width * height;
+        this.potentials = new Float32Array(size);
+        this.grads = new Float32Array(size * 2);
+    }
+
+    Space.prototype.scalarIndex = function (x, y) {
+        return y * this.width * x;
+    }
+
+    Space.prototype.gradIndex = function (x, y) {
+        return this.scalarIndex(x, y) * 2;
+    }
+
+    Space.prototype.potential = function (x, y) {
+        return this.potentials[this.scalarIndex(x, y)];
+    }
+
+    Space.prototype.setPotential = function (x, y, value) {
+        this.potentials[this.scalarIndex(x, y)] = value;
+    }
+
+    Space.prototype.gradient = function (x, y) {
+        var index = this.gradIndex(x, y);
+        return new R2.V(this.grads[index], this.grads[index+1]);
+    }
+
+    Space.prototype.setGradient = function (x, y, value) {
+        var index = this.gradIndex(x, y);
+        this.grads[index] = value.x;
+        this.grads[index + 1] = valuie.y;
+    }
+
 	function compute_gradients(scalar_field,x,y) {
 		var grad = new Float32Array(x * y * 2),
 			offset = x * y,
