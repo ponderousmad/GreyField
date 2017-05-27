@@ -18,8 +18,9 @@ var GREY = (function () {
         this.levels = [
             new Level({resource: "normalspace.png", shipX: 50, shipY: 50 }),
             new Level({resource: "grey_square.png", shipX: 80, shipY: 50 }),
-            new Level({resource: "wells.png", shipX: 50, shipY: 50 }),
-            new Level({resource: "ring.png", shipX: 320, shipY: 200 })
+            new Level({resource: "wells.png", shipX: 100, shipY: 100 }),
+            new Level({resource: "ring.png", shipX: 320, shipY: 200 }),
+            new Level({resource: "cloud.png", shipX: 100, shipY: 100 })
         ];
 
         var self = this;
@@ -88,11 +89,12 @@ var GREY = (function () {
     SpaceView.prototype.loadLevel = function (index) {
         this.level = this.levels[index];
         var image = this.level.image,
-            space = new FIELD.Space(image.width, image.height, this.level.shipPosition.clone());
+            space = new FIELD.Space(image.width, image.height);
         IMPROC.processImage(image, 0, 0, image.width, image.height, function (x, y, r, g, b, a) {
             space.setPotential(x, y, r / IMPROC.BYTE_MAX);
         });
         space.computeGrads();
+        space.setupShip(this.level.shipPosition.clone());
 
         this.xGrad = canvasMatching(image);
         this.yGrad = canvasMatching(image);
