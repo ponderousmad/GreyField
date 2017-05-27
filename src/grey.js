@@ -81,7 +81,7 @@ var GREY = (function () {
                     shipPos = this.space.ship.pos,
                     dx = levelX - shipPos.x,
                     dy = levelY - shipPos.y;
-                fireAngle = Math.atan2(dx, dy) + Math.PI;
+                fireAngle = Math.atan2(dy, dx) + Math.PI;
             }
 
             this.space.update(elapsed, 1, fire, fireAngle);

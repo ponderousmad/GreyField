@@ -13,8 +13,8 @@ var FIELD = (function () {
         this.grads = new Float32Array(size * 2);
         this.particles = [];
 
-        this.ship = new Ship(10, new R2.V(50, 50), 0.5, 45, 0.04);
-        this.gravity = 0.001;
+        this.ship = new Ship(2, new R2.V(50, 50), 2, 5, 0.1);
+        this.gravity = 0.005;
     }
 
     Space.prototype.scalarIndex = function (x, y) {
