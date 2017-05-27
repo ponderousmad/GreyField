@@ -59,26 +59,6 @@ var FIELD = (function () {
         }
 
     }
-    function compute_gradients(scalar_field,x,y) {
-        var grad = new Float32Array(x * y * 2),
-            offset = x * y,
-            size = x * y * 2;
-        
-        for (var i = 0; i < offset; i++) {
-            if ( (i-1) % y < (i+1) % y) {
-                grad[i] = scalar_field[i+1]-scalar_field[i-1];
-            } else {
-                grad[i] = 0;
-            }
-            
-            if( (i - y >= 0) && (i + y < offset)) {
-                grad[i+offset] = scalar_field[i+y] - scalar_field[i-y];
-            } else {
-                grad[i+offset] = 0;
-            }
-        }
-        return grad;
-    }
     
     function Ship (total_mass,empty_mass,particle_number,ejection_velocity,starting_position) {
         //constants:
