@@ -29,7 +29,7 @@ var FIELD = (function () {
         if(x >= 0 && x < this.width && y >= 0 && y < this.height) {
             return this.potentials[this.scalarIndex(x, y)];
         } else {
-            return Math.max(-x,-y,y-this.height,x-this.width);
+            return Math.max(-x,-y,y-this.height,x-this.width) + 1;
         }
     }
 
