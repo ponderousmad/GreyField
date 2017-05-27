@@ -13,7 +13,7 @@ var FIELD = (function () {
         this.grads = new Float32Array(size * 2);
         this.particles = [];
 
-        this.ship = new Ship(2, new R2.V(50, 50), 2, 5, 0.1);
+        this.ship = new Ship(2, new R2.V(50, 50), 2, 5, 0.1, this);
         this.gravity = 0.005;
     }
 
@@ -100,7 +100,7 @@ var FIELD = (function () {
         }
     }
     
-    function Ship (shipMass, position, particleMass, particleCount, particleVelocity) {
+    function Ship (shipMass, position, particleMass, particleCount, particleVelocity, space) {
         //constants:
         this.shipMass = shipMass;
         this.particleMass = particleMass;
@@ -110,7 +110,7 @@ var FIELD = (function () {
         this.particleCount = particleCount;
         this.pos = position;
         this.vel = new R2.V(0, 0);
-        this.energy = 0;
+        this.energy = 0.5 * this.vel.lengthSq() + space.closestPotential(new R2.V(this.pos.y,this.pos.x)) * space.gravity;
     }
 
     Ship.prototype.mass = function () {
@@ -125,16 +125,17 @@ var FIELD = (function () {
             new R2.V(Math.cos(theta), Math.sin(theta)),
             this.particleVelocity * this.particleMass / this.mass()
         );
+        this.energy = 0.5 * this.vel.lengthSq() + space.closestPotential(new R2.V(this.pos.y,this.pos.x)) * space.gravity;
 
         this.particleCount -= 1;
 
         var velocity = new R2.V(Math.cos(theta), Math.sin(theta));
         velocity.scale(this.vel.length() - this.particleVelocity);
-        space.particles.push(new Particle(this.particleMass, this.pos.clone(), velocity));
+        space.particles.push(new Particle(this.particleMass, this.pos.clone(), velocity, space));
     }
 
     Ship.prototype.timestep = function(space, time) {
-        var energy = 0.5 * this.vel.lengthSq() + space.closestPotential(new R2.V(this.pos.y,this.pos.x)) * space.gravity;
+        //var energy = 0.5 * this.vel.lengthSq() + space.closestPotential(new R2.V(this.pos.y,this.pos.x)) * space.gravity;
         var speed = this.vel.length()
         if (speed * time < 1) {
             var k_1v = space.closestGradient(this.pos),
@@ -161,19 +162,22 @@ var FIELD = (function () {
             this.timestep(space,0.5*time);
         }
         var finalPotential = space.closestPotential(new R2.V(this.pos.y,this.pos.x)) * space.gravity;
-        if(finalPotential > energy) {
+        if(finalPotential > this.energy) {
             this.vel.scale(0);
         } else {
-            this.vel.normalize();
-            this.vel.scale(Math.sqrt(2 * (energy - finalPotential)));
+            if(this.vel.length > 0){
+                this.vel.normalize();
+                this.vel.scale(Math.sqrt(2 * (this.energy - finalPotential)));
+            }
         }
         //console.log("energy = ",energy);
     }
 
-    function Particle(mass,position,velocity) {
+    function Particle(mass,position,velocity, space) {
         this.mass = function () {return mass; };
         this.pos = position;
         this.vel = velocity;
+        this.energy = 0.5 * this.vel.lengthSq() + space.closestPotential(new R2.V(this.pos.y,this.pos.x)) * space.gravity;
     }
 
     Particle.prototype.timestep = Ship.prototype.timestep;
