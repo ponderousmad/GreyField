@@ -67,26 +67,52 @@ var GREY = (function () {
         this.space = space;
     }
 
-    SpaceView.prototype.update = function (now, elapsed, keyboard, pointer) {
+    SpaceView.prototype.update = function (now, elapsed, keyboard, pointer, width, height) {
         if (this.space) {
-            this.space.update(elapsed, 1);
+            var xOffset = Math.floor((width - this.space.width) * 0.5),
+                yOffset = Math.floor((height - this.space.height) * 0.5),
+                fire = false,
+                fireAngle = 0;
+
+            if (pointer.primary && pointer.primary.isStart) {
+                fire = true;
+                var levelX = pointer.primary.x - xOffset,
+                    levelY = pointer.primary.y - yOffset,
+                    shipPos = this.space.ship.pos,
+                    dx = levelX - shipPos.x,
+                    dy = levelY - shipPos.y;
+                fireAngle = Math.atan2(dx, dy) + Math.PI;
+            }
+
+            this.space.update(elapsed, 1, fire, fireAngle);
         }
     };
 
     SpaceView.prototype.draw = function (context, width, height) {
         context.clearRect(0, 0, width, height);
-        if (this.batch.loaded) {
-            BLIT.draw(context, this.image, 0, 0, BLIT.ALIGN.TopLeft);
-        }
         if (this.space) {
-            BLIT.draw(context, this.xGrad, this.space.width, 0, BLIT.ALIGN.TopLeft);
-            BLIT.draw(context, this.yGrad, 0, this.space.height, BLIT.ALIGN.TopLeft);
+            var xOffset = Math.floor((width - this.space.width) * 0.5),
+                yOffset = Math.floor((height - this.space.height) * 0.5);
+            if (this.batch.loaded) {
+                BLIT.draw(context, this.image, xOffset, yOffset, BLIT.ALIGN.TopLeft);
+            }
 
-            context.fillStyle = "red";
+            BLIT.draw(context, this.xGrad, xOffset + this.space.width, yOffset, BLIT.ALIGN.TopLeft);
+            BLIT.draw(context, this.yGrad, xOffset, yOffset + this.space.height, BLIT.ALIGN.TopLeft);
+
+            context.fillStyle = "green";
             context.beginPath();
             var shipPos = this.space.ship.pos;
-            context.arc(shipPos.x, shipPos.y, 5, 0, 2*Math.PI);
+            context.arc(shipPos.x + xOffset, shipPos.y + yOffset, 5, 0, 2*Math.PI);
             context.fill();
+
+            context.fillStyle = "blue";
+            for (var p = 0; p < this.space.particles.length; ++p) {
+                var particle = this.space.particles[p];
+                context.beginPath();
+                context.arc(particle.pos.x + xOffset, particle.pos.y + yOffset, 2, 0, 2*Math.PI);
+                context.fill();
+            }
         }
     };
 
