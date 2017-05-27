@@ -134,33 +134,33 @@ var FIELD = (function () {
     }
 
     Ship.prototype.timestep = function(space, time) {
-        var energy = 0.5 * this.vel.lengthSq() * this.mass() + space.closestPotential(this.pos);
+        //var energy = 0.5 * this.vel.lengthSq() * this.mass() + space.closestPotential(this.pos);
         var speed = this.vel.length()
-        if (speed * time < 1) {
+        if (true) { //speed * time < 1) {
             var k_1v = space.closestGradient(this.pos),
                 k_1r = this.vel,
                 k_2v = space.closestGradient(R2.addVectors(this.pos,k_1r.scaled(time/2))),
-                k_2r = R2.addVectors(this.vel,k_1r.scaled(time/2)),
+                k_2r = R2.addVectors(this.vel,k_1v.scaled(time/2)),
                 k_3v = space.closestGradient(R2.addVectors(this.pos,k_2r.scaled(time/2))),
-                k_3r = R2.addVectors(this.vel,k_2r.scaled(time/2)),
+                k_3r = R2.addVectors(this.vel,k_2v.scaled(time/2)),
                 k_4v = space.closestGradient(R2.addVectors(this.pos,k_3r.scaled(time))),
-                k_4r = R2.addVectors(this.vel,k_3r.scaled(time));
+                k_4r = R2.addVectors(this.vel,k_3v.scaled(time));
             
             this.vel.addScaled(k_1v,time/6);
             this.vel.addScaled(k_2v,2 * time/6);
             this.vel.addScaled(k_3v,2 * time/6);
             this.vel.addScaled(k_4v,time/6);
 
-            this.vel.addScaled(k_1r,time/6);
-            this.vel.addScaled(k_2r,2 * time/6);
-            this.vel.addScaled(k_3r,2 * time/6);
-            this.vel.addScaled(k_4r,time/6);
+            this.pos.addScaled(k_1r,time/6);
+            this.pos.addScaled(k_2r,2 * time/6);
+            this.pos.addScaled(k_3r,2 * time/6);
+            this.pos.addScaled(k_4r,time/6);
         } else {
             console.log("Exceeded vMax", speed);
             this.timestep(space,0.5*time);
             this.timestep(space,0.5*time);
         }
-        var finalEnergy = 0.5 * this.vel.lengthSq() * this.mass() + space.closestPotential(this.pos);
+        //var finalEnergy = 0.5 * this.vel.lengthSq() * this.mass() + space.closestPotential(this.pos);
         
     }
 
