@@ -4,8 +4,23 @@ var GREY = (function () {
     function Level(data) {
         this.resource = data.resource;
         this.image = null;
+        this.gravity = data.gravity;
         this.shipPosition = new R2.V(data.shipX, data.shipY);
+        this.shipMass = data.shipMass;
+        this.particleCount = data.particleCount;
+        this.particleMass = data.particleMass;
+        this.particleVelocity = data.particleVelocity;
     }
+
+    Level.prototype.setupShip = function (space) {
+        space.setupShip(
+            this.shipPosition.clone(),
+            this.shipMass,
+            this.particleMass,
+            this.particleCount,
+            this.particleVelocity
+        );
+    };
 
     Level.prototype.batch = function(batch) {
         this.image = batch.load(this.resource);
@@ -16,7 +31,7 @@ var GREY = (function () {
         this.updateInDraw = true;
 
         this.levels = [
-            new Level({resource: "simple.png", shipX: 150, shipY: 200 }),
+            new Level({resource: "simple.png", shipX: 150, shipY: 200, particleCount: 2 }),
             new Level({resource: "normalspace.png", shipX: 50, shipY: 50 }),
             new Level({resource: "grey_square.png", shipX: 80, shipY: 50 }),
             new Level({resource: "wells.png", shipX: 100, shipY: 100 }),
@@ -91,12 +106,12 @@ var GREY = (function () {
     SpaceView.prototype.loadLevel = function (index) {
         this.level = this.levels[index];
         var image = this.level.image,
-            space = new FIELD.Space(image.width, image.height);
+            space = new FIELD.Space(image.width, image.height, this.level.gravity);
         IMPROC.processImage(image, 0, 0, image.width, image.height, function (x, y, r, g, b, a) {
             space.setPotential(x, y, r / IMPROC.BYTE_MAX);
         });
         space.computeGrads();
-        space.setupShip(this.level.shipPosition.clone());
+        this.level.setupShip(space);
 
         this.xGrad = canvasMatching(image);
         this.yGrad = canvasMatching(image);
