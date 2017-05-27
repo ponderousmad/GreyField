@@ -69,7 +69,7 @@ var GREY = (function () {
 
     SpaceView.prototype.update = function (now, elapsed, keyboard, pointer) {
         if (this.space) {
-            //this.space.update()
+            this.space.update(elapsed, 1);
         }
     };
 
