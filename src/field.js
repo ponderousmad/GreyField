@@ -127,7 +127,9 @@ var FIELD = (function () {
     Particle.prototype.timestep = Ship.prototype.timestep;
 
     return {
-
+        Space : Space,
+        Ship : Ship,
+        Particle : Particle,
     }
 }());
 
