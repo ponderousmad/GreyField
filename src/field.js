@@ -46,7 +46,7 @@ var FIELD = (function () {
     Space.prototype.setGradient = function (x, y, value) {
         var index = this.gradIndex(x, y);
         this.grads[index] = value.x;
-        this.grads[index + 1] = valuie.y;
+        this.grads[index + 1] = value.y;
     }
 
     Space.prototype.computeGrads = function() {
@@ -54,7 +54,7 @@ var FIELD = (function () {
             for (var y = 0; y < this.height; y++) {
                 var dx = this.potential(x-1,y)-this.potential(x+1,y),
                     dy = this.potential(x,y-1)-this.potential(x,y+1);
-                this.setGradient(x,y, R2.V(dx,dy));
+                this.setGradient(x,y, new R2.V(dx,dy));
             }
         }
 
