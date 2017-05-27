@@ -29,7 +29,7 @@ var FIELD = (function () {
         if(x >= 0 && x < this.width && y >= 0 && y < this.height) {
             return this.potentials[this.scalarIndex(x, y)];
         } else {
-            return 1;
+            return 4;
         }
     }
 
@@ -48,16 +48,16 @@ var FIELD = (function () {
     }
 
     Space.prototype.closestGradient = function(pos) {
-        var T = Math.floor(pos.y), // top
+        var T = Math.floor(pos.x), // top
             B = T+1, // bottom
-            L = Math.floor(pos.x), // left
+            L = Math.floor(pos.y), // left
             R = L+1, // right
             TL = this.potential(T,L),
             TR = this.potential(T,R),
             BL = this.potential(B,L),
             BR = this.potential(B,R),
-            x_grad = lerp(TL-TR,BL-BR,pos.x) * this.gravity,
-            y_grad = lerp(TR-BR,TL-BL,pos.y) * this.gravity;
+            y_grad = lerp(TL-TR,BL-BR,pos.x) * this.gravity,
+            x_grad = lerp(TR-BR,TL-BL,pos.y) * this.gravity;
         return new R2.V(x_grad,y_grad);
     }
 
@@ -81,7 +81,7 @@ var FIELD = (function () {
             for (var y = 0; y < this.height; y++) {
                 var dx = this.potential(x-1,y)-this.potential(x+1,y),
                     dy = this.potential(x,y-1)-this.potential(x,y+1);
-                this.setGradient(x,y, new R2.V(dx,dy));
+                this.setGradient(x,y,this.closestPotential(new R2.V(x,y)));
             }
         }
 
@@ -134,9 +134,9 @@ var FIELD = (function () {
     }
 
     Ship.prototype.timestep = function(space, time) {
-        //var energy = 0.5 * this.vel.lengthSq() * this.mass() + space.closestPotential(this.pos);
+        //var energy = 0.5 * this.vel.lengthSq() + space.closestPotential(new R2.V(this.pos.y,this.pos.x)) * space.gravity;
         var speed = this.vel.length()
-        if (true) { //speed * time < 1) {
+        if (speed * time < 1) {
             var k_1v = space.closestGradient(this.pos),
                 k_1r = this.vel,
                 k_2v = space.closestGradient(R2.addVectors(this.pos,k_1r.scaled(time/2))),
@@ -156,12 +156,12 @@ var FIELD = (function () {
             this.pos.addScaled(k_3r,2 * time/6);
             this.pos.addScaled(k_4r,time/6);
         } else {
-            console.log("Exceeded vMax", speed);
+            //console.log("Exceeded vMax", speed);
             this.timestep(space,0.5*time);
             this.timestep(space,0.5*time);
         }
         //var finalEnergy = 0.5 * this.vel.lengthSq() * this.mass() + space.closestPotential(this.pos);
-        
+        //console.log("energy = ",energy);
     }
 
     function Particle(mass,position,velocity) {
