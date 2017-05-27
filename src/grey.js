@@ -81,12 +81,19 @@ var GREY = (function () {
         if (this.space) {
             BLIT.draw(context, this.xGrad, this.space.width, 0, BLIT.ALIGN.TopLeft);
             BLIT.draw(context, this.yGrad, 0, this.space.height, BLIT.ALIGN.TopLeft);
+
+            context.fillStyle = "red";
+            context.beginPath();
+            var shipPos = this.space.ship.pos;
+            context.arc(shipPos.x, shipPos.y, 5, 0, 2*Math.PI);
+            context.fill();
         }
     };
 
     function start() {
         MAIN.start(document.getElementById("canvas2D"), new SpaceView());
 
+        MAIN.setupToggleControls();
         if (MAIN.runTestSuites() === 0) {
             console.log("All Tests Passed!");
         }
