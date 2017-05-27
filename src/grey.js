@@ -87,6 +87,7 @@ var GREY = (function () {
     function start() {
         MAIN.start(document.getElementById("canvas2D"), new SpaceView());
 
+        MAIN.setupToggleControls();
         if (MAIN.runTestSuites() === 0) {
             console.log("All Tests Passed!");
         }
