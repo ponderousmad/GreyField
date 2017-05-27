@@ -14,7 +14,7 @@ var FIELD = (function () {
         this.particles = [];
 
         this.ship = new Ship(100,10,45,4,new R2.V(50,50));
-        this.gravity = 0.01;
+        this.gravity = 0.001;
     }
 
     Space.prototype.scalarIndex = function (x, y) {
@@ -127,12 +127,6 @@ var FIELD = (function () {
     Ship.prototype.timestep = function(space,time) {
         var energy = 0.5 * this.vel.lengthsq() * this.mass + space.closestPotential(this.pos);
         if(this.vel.length() * time < 1) {
-            /*var accel = space.gravity * space.closestGradient(this.pos);
-            this.pos.addScaled(this.vel,t);
-            this.pos.addScaled(accel,0.5*t*t);
-
-            this.vel.addScaled(accel,t);*/
-
             var k_1v = space.closestGradient(this.pos),
                 k_1r = this.vel,
                 k_2v = space.closestGradient(R2.addVectors(this.pos,k_1r.scaled(time/2))),
