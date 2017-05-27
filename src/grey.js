@@ -84,7 +84,7 @@ var GREY = (function () {
 
             context.fillStyle = "red";
             context.beginPath();
-            var shipPos = new R2.V(100, 100);//this.space.ship.pos;
+            var shipPos = this.space.ship.pos;
             context.arc(shipPos.x, shipPos.y, 5, 0, 2*Math.PI);
             context.fill();
         }
