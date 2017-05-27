@@ -35,8 +35,8 @@ var FIELD = (function () {
     }
     
     Ship.prototype.shoot = function(theta) {
-        this.vel.x += cos(theta) * this.v_particle * this.m_particle / this.mass;
-        this.vel.y += sin(theta) * this.v_particle * this.m_particle / this.mass;
+        this.vel.addScaled( R2.V(Math.cos(theta),Math.sin(theta)), this.v_particle * this.m_particle / this.mass);
+        
         this.mass -= this.m_particle;
         //create new particles as well, going in opposite direction (-cos, -sin)
         
