@@ -29,7 +29,7 @@ var FIELD = (function () {
         if(x >= 0 && x < this.width && y >= 0 && y < this.height) {
             return this.potentials[this.scalarIndex(x, y)];
         } else {
-            return 4;
+            return Math.max(-x,-y,y-this.width,x-this.height);
         }
     }
 
@@ -134,7 +134,7 @@ var FIELD = (function () {
     }
 
     Ship.prototype.timestep = function(space, time) {
-        //var energy = 0.5 * this.vel.lengthSq() + space.closestPotential(new R2.V(this.pos.y,this.pos.x)) * space.gravity;
+        var energy = 0.5 * this.vel.lengthSq() + space.closestPotential(new R2.V(this.pos.y,this.pos.x)) * space.gravity;
         var speed = this.vel.length()
         if (speed * time < 1) {
             var k_1v = space.closestGradient(this.pos),
@@ -155,12 +155,18 @@ var FIELD = (function () {
             this.pos.addScaled(k_2r,2 * time/6);
             this.pos.addScaled(k_3r,2 * time/6);
             this.pos.addScaled(k_4r,time/6);
-        } else {
+        } else if (speed) {
             //console.log("Exceeded vMax", speed);
             this.timestep(space,0.5*time);
             this.timestep(space,0.5*time);
         }
-        //var finalEnergy = 0.5 * this.vel.lengthSq() * this.mass() + space.closestPotential(this.pos);
+        var finalPotential = space.closestPotential(new R2.V(this.pos.y,this.pos.x)) * space.gravity;
+        if(finalPotential > energy) {
+            this.vel.scale(0);
+        } else {
+            this.vel.normalize();
+            this.vel.scale(Math.sqrt(2 * (energy - finalPotential)));
+        }
         //console.log("energy = ",energy);
     }
 
