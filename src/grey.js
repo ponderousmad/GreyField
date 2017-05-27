@@ -17,7 +17,8 @@ var GREY = (function () {
 
         this.levels = [
             new Level({resource: "normalspace.png", shipX: 50, shipY: 50 }),
-            new Level({resource: "grey_square.png", shipX: 50, shipY: 50 })
+            new Level({resource: "grey_square.png", shipX: 50, shipY: 50 }),
+            new Level({resource: "wells.png", shipX: 50, shipY: 50 })
         ];
 
         var self = this;
@@ -42,7 +43,7 @@ var GREY = (function () {
             this.levelSelect.addEventListener("change", function (e) {
                 self.loadLevel(parseInt(self.levelSelect.value));
             }, true);
-            for (var l = 0, self = this; l < this.levels.length; ++l) {
+            for (var l = 0, self = this ; l < this.levels.length; ++l) {
                 self.levelSelect.appendChild(new Option("Level " + l, l));
             }
         }
