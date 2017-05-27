@@ -8,6 +8,9 @@ var FIELD = (function () {
         this.potentials = new Float32Array(size);
         this.grads = new Float32Array(size * 2);
         this.particles = [];
+
+        this.ship = new Ship(100,10,45,4,new R2.V(50,50));
+        this.gravity = 0.01;
     }
 
     Space.prototype.scalarIndex = function (x, y) {
@@ -59,6 +62,19 @@ var FIELD = (function () {
         }
 
     }
+
+    Space.prototype.update = function(updateTime,numPhysicsSteps,isShooting,shotAngle) {
+        var physicsTime = updateTime / numPhysicsSteps;
+        
+        if(isShooting) {
+            this.ship.shoot(shotAngle,this);
+        }
+
+        this.ship.timestep(this,physicsTime);
+        for (var i = 0; i < this.particles.length; ++i) {
+            particles[i].timestep(this,physicsTime);
+        }
+    }
     
     function Ship (total_mass,empty_mass,particle_number,ejection_velocity,starting_position) {
         //constants:
@@ -86,7 +102,7 @@ var FIELD = (function () {
 
     Ship.prototype.timestep = function(space,time) {
         if(this.vel.length() * time < 1) {
-            var accel = space.closestGradient(this.pos);
+            var accel = space.gravity * space.closestGradient(this.pos);
             this.pos.addScaled(this.vel,t);
             this.pos.addScaled(accel,0.5*t*t);
 
