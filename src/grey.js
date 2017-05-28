@@ -222,6 +222,7 @@ var GREY = (function () {
             editArea = document.getElementById("textData"),
             createPart = document.getElementById("buttonCreatePart"),
             updatePart = document.getElementById("buttonUpdatePart"),
+            deletePart = document.getElementById("buttonDeletePart"),
             self = this;
 
         this.levelSelect = document.getElementById("selectLevel");
@@ -301,6 +302,14 @@ var GREY = (function () {
             self.level.shipMass = value;
             onLevelChanged();
         });
+        this.initShipX = setupSlider("ShipX", function (value) {
+            self.level.shipPosition.x = value;
+            onLevelChanged();
+        });
+        this.initShipY = setupSlider("ShipY", function (value) {
+            self.level.shipPosition.y = value;
+            onLevelChanged();
+        });
         this.initParticles = setupSlider("Particles", function (value) {
             self.level.particleCount = Math.round(value);
             onLevelChanged();
@@ -358,12 +367,23 @@ var GREY = (function () {
             }, true);
         }
 
+        if (deletePart) {
+            deletePart.addEventListener("click", function(e) {
+                if (self.selectedPart !== null) {
+                    self.level.parts.splice(self.selectedPart, 1);
+                    onLevelChanged(true);
+                }
+            }, true);
+        }
+
         this.updateLevelEditors();
     };
 
     SpaceView.prototype.updateLevelEditors = function () {
         this.initGravity(this.space.gravity);
         this.initShipMass(this.space.ship.shipMass);
+        this.initShipX(this.space.ship.pos.x);
+        this.initShipY(this.space.ship.pos.y);
         this.initParticles(this.space.ship.particleCount);
         this.initParticleVel(this.space.ship.particleVelocity);
         this.initParticleMass(this.space.ship.particleMass);
@@ -504,8 +524,8 @@ var GREY = (function () {
 
     SpaceView.prototype.draw = function (context, width, height) {
         context.clearRect(0, 0, width, height);
-        context.save();
         if (this.space) {
+            context.save();
             context.translate(
                 centerOffset(width, this.space.width),
                 centerOffset(height, this.space.height)
@@ -547,8 +567,11 @@ var GREY = (function () {
                 var exit = this.space.exits[e];
                 BLIT.draw(context, this.exitImage, exit.pos.x, exit.pos.y, BLIT.ALIGN.Center, exit.size*2, exit.size*2);
             }
+            context.restore();
+            context.fillStyle = "black";
+            context.font = '48px serif';
+            context.fillText(". ".repeat(this.space.ship.particleCount), 10, 20);
         }
-        context.restore();
     };
 
     function start() {
