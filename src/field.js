@@ -21,8 +21,6 @@ var FIELD = (function () {
         this.isLevelLost = false;
 
         this.hasPotentialUpdated = true;
-
-        this.bombs.push(new Bomb(new R2.V(300,300),false,5,50));
     }
 
     Space.prototype.setupShip = function (shipPosition, shipMass, particleMass, particleCount, particleVelocity) {
