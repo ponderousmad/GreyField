@@ -49,7 +49,7 @@ var GREY = (function () {
     }
 
     function makeBomb(data, pos, size) {
-        var type = data.type == "white",
+        var isWhite = data.type == "white",
             range = parseFloat(data.range);
         if (isNaN(range)) {
             range = null;
@@ -57,7 +57,7 @@ var GREY = (function () {
         return makePart(data, pos,
             function () {
                 var saveData = {
-                    type: type ? "white" : "black"
+                    bombType: isWhite ? "white" : "black"
                 }
                 if (range) {
                     saveData.range = range;
@@ -65,11 +65,32 @@ var GREY = (function () {
                 return savePart(saveData, "bomb", pos, size);
             },
             function (space) {
-                space.addBomb(pos, type, size, range);
+                space.addBomb(pos, isWhite, size, range);
             }
         );
     }
-    
+
+    function makePlanet(data, pos, size) {
+        var exponent = parseFloat(data.exponent),
+            scale = parseFloat(data.scale);
+        if (isNaN(exponent)) {
+            exponent = null;
+        }
+        return makePart(data, pos,
+            function () {
+                var saveData = {
+                }
+                if (exponent) {
+                    saveData.exponent = exponent;
+                }
+                return savePart(saveData, "planet", pos, size);
+            },
+            function (space) {
+                space.addPlanet(pos, exponent, size);
+            }
+        );
+    }
+
     function loadPart(data) {
         var pos = new R2.V(parseFloat(data.x), parseFloat(data.y)),
             size = parseFloat(data.size);
@@ -80,6 +101,7 @@ var GREY = (function () {
             case "exit": return makeExit(data, pos, size);
             case "fuel": return makeFuel(data, pos, size);
             case "bomb": return makeBomb(data, pos, size);
+            case "planet": return makePlanet(data, pos, size);
         }
     }
 
@@ -402,7 +424,7 @@ var GREY = (function () {
     }
 
     SpaceView.prototype.update = function (now, elapsed, keyboard, pointer, width, height) {
-        elapsed = Math.min(200, elapsed);
+        elapsed = 20;
         if (this.space) {
             var fire = false,
                 fireAngle = 0;
