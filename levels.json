@@ -81,6 +81,11 @@
                     "y": 260
                 }
             ]
+        },
+        {
+            "resource": "final_level.png",
+            "shipX": 100,
+            "shipY": 100
         }
     ]
 }
