@@ -292,9 +292,11 @@ var GREY = (function () {
 
     SpaceView.prototype.draw = function (context, width, height) {
         context.clearRect(0, 0, width, height);
+        context.save();
         if (this.space) {
             var xOffset = Math.floor((width - this.space.width) * 0.5),
                 yOffset = Math.floor((height - this.space.height) * 0.5);
+            context.translate(xOffset, yOffset);
 
             if(this.space.hasPotentialUpdated){ // might need to go before the other stuff
                 this.space.hasPotentialUpdated = false;
@@ -303,36 +305,37 @@ var GREY = (function () {
             }
 
             if (this.level) {
-                BLIT.draw(context, this.potentialCanvas, xOffset, yOffset, BLIT.ALIGN.TopLeft);
+                BLIT.draw(context, this.potentialCanvas, 0, 0, BLIT.ALIGN.TopLeft);
             }
 
             if (this.xGrad) {
-                BLIT.draw(context, this.xGrad, xOffset + this.space.width, yOffset, BLIT.ALIGN.TopLeft);
+                BLIT.draw(context, this.xGrad, this.space.width, 0, BLIT.ALIGN.TopLeft);
             }
             if (this.yGrad) {
-                BLIT.draw(context, this.yGrad, xOffset, yOffset + this.space.height, BLIT.ALIGN.TopLeft);
+                BLIT.draw(context, this.yGrad, 0, this.space.height, BLIT.ALIGN.TopLeft);
             }
 
             var shipPos = this.space.ship.pos;
             context.fillStyle = "green";
             context.beginPath();
-            context.arc(shipPos.x + xOffset, shipPos.y + yOffset, 5, 0, 2*Math.PI);
+            context.arc(shipPos.x, shipPos.y, 5, 0, 2*Math.PI);
             context.fill();
 
             context.fillStyle = "blue";
             for (var p = 0; p < this.space.particles.length; ++p) {
                 var particle = this.space.particles[p];
                 context.beginPath();
-                context.arc(particle.pos.x + xOffset, particle.pos.y + yOffset, 2, 0, 2*Math.PI);
+                context.arc(particle.pos.x, particle.pos.y, 2, 0, 2*Math.PI);
                 context.fill();
             }
 
             for (var b = 0; b < this.space.bombs.length; ++b) {
                 var bomb = this.space.bombs[b],
                     bombImage = bomb.explodesWhite ? this.whiteBombImage : this.blackBombImage;
-                BLIT.draw(context, bombImage, bomb.pos.x + xOffset, bomb.pos.y + yOffset, BLIT.ALIGN.Center);
+                BLIT.draw(context, bombImage, bomb.pos.x, bomb.pos.y, BLIT.ALIGN.Center);
             }
         }
+        context.restore();
     };
 
     function start() {
