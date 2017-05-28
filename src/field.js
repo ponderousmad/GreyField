@@ -136,8 +136,8 @@ var FIELD = (function () {
     };
 
     
-    Space.prototype.addPlanet = function (position, scale, gravityExponent) {
-        this.planets.push(new Planet(position, scale, gravityExponent));
+    Space.prototype.addPlanet = function (position, gravityExponent, size) {
+        this.planets.push(new Planet(position, gravityExponent, size));
 
         this.hasPotentialUpdated = true;
     };
@@ -407,10 +407,10 @@ var FIELD = (function () {
             dist = R2.pointDistance(pos,this.pos),
             wavePeak = waveSpeed * this.elapsed,
             waveWidth = (waveSpeed * 0.1) * this.elapsed;
-        return Math.abs(dist - wavePeak) > waveWidth ? 0 : Math.cos( (dist - wavePeak) / waveWidth) * (this.remaining / this.effectTypes[this.type][0]);
+        return Math.abs(dist - wavePeak) > waveWidth ? 0 : Math.cos( (Math.PI/2) * (dist - wavePeak) / waveWidth) * (this.remaining / this.effectTypes[this.type][0]);
     }
 
-    function Planet(position, size, gravityExponent){
+    function Planet(position, gravityExponent, size){
         this.pos = position;
         this.size = size || 50;
         this.exponent = gravityExponent || 1; // 1 is a normal planet, because this exponent affects the potential
@@ -418,7 +418,7 @@ var FIELD = (function () {
 
     Planet.prototype.potential = function(pos) {
         var dPlan = R2.pointDistance(this.pos, pos);
-        return R2.clamp(1 - (1.0 / Math.pow(dPlan / this.size, this.exponent)),-3,3);
+        return R2.clamp(0.0 - (1.0 / Math.pow(dPlan / this.size, this.exponent)),-3,3);
     }
 
 
