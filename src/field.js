@@ -110,6 +110,48 @@ var FIELD = (function () {
         this.bombs.push(new Bomb(position, type, size, range));
     }
 
+    Space.prototype.checkFuelCollisions = function (ship) {
+        for(var i = 0; i < this.fuels.length; i++){
+            var fuel = this.fuels[i];
+            if (hasCollided(ship,fuel)) {
+                this.fuels.splice(i,1);
+                ship.particleCount += fuel.particles;
+                ship.particleVelocity += fuel.boost;
+                ship.calculateMass();
+                ship.energy += fuel.particles  * ship.particleMass * Math.max(this.closestPotential(ship.pos), this.closestPotential(fuel.pos)) * this.gravity;
+            }
+        }
+    }
+
+    Space.prototype.checkExitCollisions = function (ship) {
+        for(var i = 0; i < this.exits.length; i++){
+            var exit = this.exits[i];
+            if(hasCollided(ship,exit)) {
+                this.exits.splice(i,1);
+                this.isLevelCompleted = true;
+                ship.energy = -1;
+            }
+        }
+    }
+
+    Space.prototype.checkBombCollisions = function (particle) {
+        for(var i = 0; i < this.bombs.length; i++){
+            var bomb = this.bombs[i];
+            if(hasCollided(particle,bomb)) {
+                this.bombs.splice(i,1);
+                if(particle.losesGameOnExplosion) {
+                    particle.energy = -1;
+                    particle.pos = new R2.V(-100,-100);
+                    this.isLevelLost = true;
+                } else {
+                    this.particles.splice(this.particles.indexOf(particle),1);
+                }
+
+                bomb.explode(this);
+            }
+        }
+    }
+
     function Ship (shipMass, position, particleMass, particleCount, particleVelocity, space) {
         //constants:
         this.shipMass = shipMass;
@@ -185,60 +227,18 @@ var FIELD = (function () {
         }
 
         // COLLISION CODE BLOCK: 
-        for(var i = 0; i < space.fuels.length && this.usesFuel; i++){
-            var fuel = space.fuels[i],
-                distance = R2.pointDistance(this.pos, fuel.pos);
-            if(distance < this.size + fuel.size) {
-                space.fuels.splice(i,1);
-                this.particleCount += fuel.particles;
-                this.particleVelocity += fuel.boost;
-                this.calculateMass();
-                this.energy += fuel.particles  * this.particleMass * Math.max(space.closestPotential(this.pos), space.closestPotential(fuel.pos)) * space.gravity;
-            }
+        if(this.usesFuel) {
+            space.checkFuelCollisions(this);
         }
 
-        for(var i = 0; i < space.exits.length && this.endsLevel; i++){
-            var end = space.exits[i],
-                distance = R2.pointDistance(this.pos, end.pos);
-            if(distance < this.size + end.size) {
-                space.exits.splice(i,1);
-                space.isLevelCompleted = true;
-                this.energy = -1;
-            }
+        if(this.endsLevel) {
+            space.checkExitCollisions(this);
         }
 
-        for(var i = 0; i < space.bombs.length; i++){
-            var explosive = space.bombs[i],
-                distance = R2.pointDistance(this.pos, explosive.pos);
-            if(distance < this.size + explosive.size) {
-                console.log("explosion occured");
-                space.bombs.splice(i,1);
-                if(this.losesGameOnExplosion) {
-                    this.energy = -1;
-                    this.pos = new R2.V(-100,-100);
-                    space.isLevelLost = true;
-                } else {
-                    space.particles.splice(space.particles.indexOf(this),1);
-                }
-                for (var x = Math.floor(explosive.pos.x - explosive.range); x <= Math.ceil(explosive.pos.x + explosive.range); x++){
-                    for (var y = Math.floor(explosive.pos.y - explosive.range); y <= Math.ceil(explosive.pos.y + explosive.range); y++){
-                        var pos = new R2.V(x,y),
-                            distance = R2.pointDistance(pos,explosive.pos);
-                        if(distance < explosive.range) {
-                            //console.log("changing values");
-                            var weight = 1 - (explosive.range - distance) / explosive.range, // 1 far away, 0 close
-                                pot = space.potential(pos.x,pos.y);
-                            if(explosive.explodesWhite) {
-                                space.setPotential(pos.x,pos.y, 1 - ((1-pot) * weight) )
-                            } else {
-                                space.setPotential(pos.x,pos.y,pot * weight);
-                            }
-                        }
-                    }
-                }
-                space.hasPotentialUpdated = true;
-            }
-        }
+        space.checkBombCollisions(this);
+
+        
+        
 
         var finalPotential = this.mass * space.closestPotential(this.pos) * space.gravity;
         if(finalPotential > this.energy) {
@@ -250,6 +250,11 @@ var FIELD = (function () {
             }
         }
         //console.log("energy = ",0.5 * this.vel.lengthSq() + space.closestPotential(new R2.V(this.pos.y,this.pos.x)) * space.gravity);
+    }
+
+    function hasCollided(objectA,objectB) {
+        var distance = R2.pointDistance(objectA.pos, objectB.pos);
+        return (distance < objectA.size + objectB.size);
     }
 
     function Particle(mass,position,velocity, space) {
@@ -281,6 +286,25 @@ var FIELD = (function () {
         this.explodesWhite = type; // false for black, true for white
         this.size = size;
         this.range = range || 50;
+    }
+
+    Bomb.prototype.explode = function(space) {
+        for (var x = Math.floor(this.pos.x - this.range); x <= Math.ceil(this.pos.x + this.range); x++){
+            for (var y = Math.floor(this.pos.y - this.range); y <= Math.ceil(this.pos.y + this.range); y++){
+                var pos = new R2.V(x,y),
+                    distance = R2.pointDistance(pos,this.pos);
+                if(distance < this.range) {
+                    var weight = 1 - (this.range - distance) / this.range, // 1 far away, 0 close
+                        pot = space.potential(pos.x,pos.y);
+                    if(this.explodesWhite) {
+                        space.setPotential(pos.x,pos.y, 1 - ((1-pot) * weight) )
+                    } else {
+                        space.setPotential(pos.x,pos.y,pot * weight);
+                    }
+                }
+            }
+        }
+        space.hasPotentialUpdated = true;
     }
 
     Particle.prototype.timestep = Ship.prototype.timestep;
