@@ -124,6 +124,11 @@ var GREY = (function () {
         return gradToPixel(space.closestGradient(new R2.V(x + 0.5, y + 0.5)).y / space.gravity);
     }
 
+    function potToPixel(space, x, y) {
+        var c = space.potential(x,y) * IMPROC.BYTE_MAX;
+        return [c, c, c, IMPROC.BYTE_MAX];
+    }
+
     SpaceView.prototype.loadLevel = function (index) {
         this.level = this.levels[index];
         var image = this.level.image,
@@ -159,6 +164,7 @@ var GREY = (function () {
             }
 
             this.space.update(elapsed, 1, fire, fireAngle);
+
         }
     };
 
@@ -167,6 +173,14 @@ var GREY = (function () {
         if (this.space) {
             var xOffset = Math.floor((width - this.space.width) * 0.5),
                 yOffset = Math.floor((height - this.space.height) * 0.5);
+
+
+            if(this.space.hasPotentialUpdated){ // might need to go before the other stuff
+                //this.space.hasPotentialUpdated = false;
+                drawGradient(this.space, this.potentialCanvas, potToPixel);
+                console.log("Updated Gradient");
+            }
+
             if (this.level) {
                 BLIT.draw(context, this.potentialCanvas, xOffset, yOffset, BLIT.ALIGN.TopLeft);
             }
@@ -191,6 +205,25 @@ var GREY = (function () {
                 context.arc(particle.pos.x + xOffset, particle.pos.y + yOffset, 2, 0, 2*Math.PI);
                 context.fill();
             }
+
+            context.fillStyle = "red";
+            for (var p = 0; p < this.space.explosives.length; ++p) {
+                var explosive = this.space.explosives[p];
+                var new_image = new Image();
+                if(explosive.explodesWhite) {
+                    new_image.src = 'images/white_bomb.png';
+                } else {
+                    new_image.src = 'images/black_bomb.png';
+                }
+                new_image.onload = function(){
+                    //context.drawImage(new_image, explosive.pos.x + xOffset, explosive.pos.y + yOffset);
+                }
+                context.beginPath();
+                context.arc(explosive.pos.x + xOffset, explosive.pos.y + yOffset, 5, 0, 2*Math.PI);
+                context.fill();
+
+            }
+
         }
     };
 
