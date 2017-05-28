@@ -1,6 +1,58 @@
 var GREY = (function () {
     "use strict";
 
+    function savePart(data, type, pos, size) {
+        data.type = type;
+        data.x = pos.x;
+        data.y = pos.y;
+        data.size = size;
+    }
+
+    function makeExit(data, pos, size) {
+        return {
+            pos: pos,
+            save: function () {
+                return savePart({}, "exit", pos);
+            },
+            build: function (space) {
+
+            }
+        }
+    }
+
+    function makeFuel(data, pos, size) {
+        var boost = data.boost,
+            particles = parseInt(data.particles);
+        return {
+            pos: pos,
+            save: function () {
+                var saveData = {}
+                if (data)
+                return savePart(saveData, "fuel", pos, size);
+            },
+            build: function (space) {
+                space.addFuel(pos, particles, boost, size);
+            }
+        }
+    }
+
+    function makeBomb(data, pos, size) {
+        var type = data.type == "positive";
+            range = parseFloat(data.range);
+        if (isNaN(range)) {
+            range = null;
+        }
+        return {
+            pos: pos,
+            save: function () {
+                return savePart({}, "bomb", pos);
+            },
+            build: function (space) {
+                space.addBomb(pos, type, range, size);
+            }
+        }
+    }
+
     function Level(data) {
         this.resource = data.resource;
         this.image = null;
@@ -10,6 +62,70 @@ var GREY = (function () {
         this.particleCount = data.particleCount;
         this.particleMass = data.particleMass;
         this.particleVelocity = data.particleVelocity;
+
+        this.exits = [];
+        this.fuel = [];
+        this.bombs = [];
+        if (data.parts) {
+            for (var p = 0; p < data.parts.length; ++p) {
+                var partData = data.parts[p],
+                    pos = new R2.V(parseFloat(partData.x), parseFloat(partData.y)),
+                    size = parseFloat(partData.size);
+                if (isNaN(size)) {
+                    size = null;
+                }
+                switch (partData.type) {
+                    case "exit": {
+                        this.exits.push[makeExit(partData, pos, size)];
+                        break;
+                    }
+                    case "fuel": {
+                        this.fuel.push[makeFuel(partData, pos, size)];
+                        break;
+                    }
+                    case "bomb": {
+                        this.bombs.push[makeBomb(partData, pos, size)];
+                    }
+                }
+            }
+        }
+    }
+
+    Level.prototype.save = function () {
+        var data = {
+            resource: this.resource,
+            shipX: this.shipPosition.x,
+            shipY: this.shipPosition.y
+        };
+        if (this.gravity) {
+            data.gravity = this.gravity;
+        }
+        if (this.shipMass) {
+            data.shipMass = this.shipMass;
+        }
+        if (this.particleCount) {
+            data.particleCount = this.particleCount;
+        }
+        if (this.particleMass) {
+            data.particleMass = this.particleMass;
+        }
+        if (this.particleVelocity) {
+            data.particleVelocity = this.particleVelocity;
+        }
+
+        var parts = [];
+
+        for (var e = 0; e < this.exits.length; ++e) {
+            parts.push(this.exits[e].save());
+        }
+        for (var f = 0; f < this.fuel.length; ++f) {
+            parts.push(this.fuel[f].save());
+        }
+        for (var b = 0; b < this.bombs.length; ++b) {
+            parts.push(this.bombs[b].save());
+        }
+
+        return data;
     }
 
     Level.prototype.setupShip = function (space) {
@@ -82,8 +198,8 @@ var GREY = (function () {
                     self.xGrad = canvasMatching(self.level.image);
                     self.yGrad = canvasMatching(self.level.image);
 
-                    drawGradient(self.space, self.xGrad, xGradToPixel);
-                    drawGradient(self.space, self.yGrad, yGradToPixel);
+                    drawGradient(self.space, self.xGrad, null, xGradToPixel);
+                    drawGradient(self.space, self.yGrad, null, yGradToPixel);
                 }
             }, true);
         }
@@ -96,8 +212,10 @@ var GREY = (function () {
         return canvas;
     }
 
-    function drawGradient(space, canvas, gradFunc) {
-        var context = canvas.getContext('2d');
+    function drawGradient(space, canvas, context, gradFunc) {
+        if (!context) {
+            context = canvas.getContext('2d');
+        }
         var buffer = context.getImageData(0, 0, canvas.width, canvas.height);
         for (var y = 0; y < space.height; ++y) {
             for (var x = 0; x < space.width; ++x) {
@@ -174,10 +292,9 @@ var GREY = (function () {
             var xOffset = Math.floor((width - this.space.width) * 0.5),
                 yOffset = Math.floor((height - this.space.height) * 0.5);
 
-
             if(this.space.hasPotentialUpdated){ // might need to go before the other stuff
-                //this.space.hasPotentialUpdated = false;
-                drawGradient(this.space, this.potentialCanvas, potToPixel);
+                this.space.hasPotentialUpdated = false;
+                drawGradient(this.space, this.potentialCanvas, this.potentialContext, potToPixel);
                 console.log("Updated Gradient");
             }
 
@@ -207,8 +324,8 @@ var GREY = (function () {
             }
 
             context.fillStyle = "red";
-            for (var p = 0; p < this.space.explosives.length; ++p) {
-                var explosive = this.space.explosives[p];
+            for (var p = 0; p < this.space.bombs.length; ++p) {
+                var explosive = this.space.bombs[p];
                 var new_image = new Image();
                 if(explosive.explodesWhite) {
                     new_image.src = 'images/white_bomb.png';

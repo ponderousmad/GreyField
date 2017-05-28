@@ -13,8 +13,8 @@ var FIELD = (function () {
         this.particles = [];
         this.gravity = gravity || 0.05;
         this.fuels = [];
-        this.ends = [];
-        this.explosives = [];
+        this.exits = [];
+        this.bombs = [];
         this.ship = null;
 
         this.isLevelCompleted = false;
@@ -22,7 +22,7 @@ var FIELD = (function () {
 
         this.hasPotentialUpdated = true;
 
-        this.explosives.push(new Explosive(new R2.V(300,300),false,5,50));
+        this.bombs.push(new Bomb(new R2.V(300,300),false,5,50));
     }
 
     Space.prototype.setupShip = function (shipPosition, shipMass, particleMass, particleCount, particleVelocity) {
@@ -99,7 +99,19 @@ var FIELD = (function () {
             this.particles[i].timestep(this, physicsTime);
         }
     }
-    
+
+    Space.prototype.addExit = function (position, size) {
+        this.exits.push(new Exit(position, size));
+    };
+
+    Space.prototype.addFuel = function (position, particles, boost, size) {
+        this.fuels.push(new Fuel(position, particles, boost, size));
+    };
+
+    Space.prototype.addBomb = function (position, type, size, range) {
+        this.bombs.push(new Bomb(position, type, size, range));
+    }
+
     function Ship (shipMass, position, particleMass, particleCount, particleVelocity, space) {
         //constants:
         this.shipMass = shipMass;
@@ -187,22 +199,22 @@ var FIELD = (function () {
             }
         }
 
-        for(var i = 0; i < space.ends.length && this.endsLevel; i++){
-            var end = space.ends[i],
+        for(var i = 0; i < space.exits.length && this.endsLevel; i++){
+            var end = space.exits[i],
                 distance = R2.pointDistance(this.pos, end.pos);
             if(distance < this.size + end.size) {
-                space.ends.splice(i,1);
+                space.exits.splice(i,1);
                 space.isLevelCompleted = true;
                 this.energy = -1;
             }
         }
 
-        for(var i = 0; i < space.explosives.length; i++){
-            var explosive = space.explosives[i],
+        for(var i = 0; i < space.bombs.length; i++){
+            var explosive = space.bombs[i],
                 distance = R2.pointDistance(this.pos, explosive.pos);
             if(distance < this.size + explosive.size) {
                 console.log("explosion occured");
-                space.explosives.splice(i,1);
+                space.bombs.splice(i,1);
                 if(this.losesGameOnExplosion) {
                     this.energy = -1;
                     this.pos = new R2.V(-100,-100);
@@ -215,7 +227,7 @@ var FIELD = (function () {
                         var pos = new R2.V(x,y),
                             distance = R2.pointDistance(pos,explosive.pos);
                         if(distance < explosive.range) {
-                            console.log("changing values");
+                            //console.log("changing values");
                             var weight = 1 - (explosive.range - distance) / explosive.range, // 1 far away, 0 close
                                 pot = space.potential(pos.x,pos.y);
                             if(explosive.explodesWhite) {
@@ -226,6 +238,7 @@ var FIELD = (function () {
                         }
                     }
                 }
+                space.hasPotentialUpdated = true;
             }
         }
 
@@ -253,31 +266,29 @@ var FIELD = (function () {
         this.losesGameOnExplosion = true;
     }
 
-    function Fuel(particles,position,boost) {
+    function Fuel(position, particles, boost, size) {
         this.pos = position;
         this.particles = particles;
-        this.size = 5;
         this.boost = boost || 0;
+        this.size = size || 5;
     }
 
-    function End(position,size) {
+    function Exit(position, size) {
         this.pos = position;
-        this.size = size;
+        this.size = size || 10;
     }
 
-    function Explosive(position,type,size,range) {
+    function Bomb(position, type, size, range) {
         this.pos = position;
-        this.size = size;
         this.explodesWhite = type; // false for black, true for white
+        this.size = size;
         this.range = range || 50;
     }
 
     Particle.prototype.timestep = Ship.prototype.timestep;
 
     return {
-        Space : Space,
-        Fuel : Fuel,
-        End : End
+        Space : Space
     }
 }());
 
