@@ -190,10 +190,11 @@ var GREY = (function () {
             saveButton = document.getElementById("buttonClipboard"),
             editArea = document.getElementById("textData"),
             self = this;
+
         this.levelSelect = document.getElementById("selectLevel");
         if (this.levelSelect) {
             this.levelSelect.addEventListener("change", function (e) {
-                self.loadLevel(parseInt(self.levelSelect.value));
+                self.loadLevel(parseInt(self.levelSelect.value), true);
             }, true);
             for (var l = 0; l < this.levels.length; ++l) {
                 self.levelSelect.appendChild(new Option(l + ": " + this.levels[l].resource.slice(0, -4), l));
@@ -226,7 +227,70 @@ var GREY = (function () {
                 document.execCommand("copy");
             }, true);
         }
+
+        function setupSlider(idBase, handleChange) {
+            var slider = document.getElementById("slider" + idBase),
+                value = document.getElementById("value" + idBase);
+            if (slider) {
+                slider.addEventListener("input", function (e) {
+                    if (value) {
+                        value.value = slider.value;
+                    }
+                    handleChange(parseFloat(slider.value));
+                });
+            }
+            if (value) {
+                value.addEventListener("change", function (e) {
+                    if (!isNaN(value.value)) {
+                        if (slider) {
+                            slider.value = value.value;
+                        }
+                        handleChange(parseFloat(value.value));
+                    }
+                });
+            }
+
+            return function(initialValue) {
+                if (value) { value.value = initialValue; }
+                if (slider) { slider.value = initialValue; }
+            };
+        }
+
+        function onLevelChanged() {
+            self.loadLevel(self.levelIndex);
+        }
+
+        this.initGravity = setupSlider("Gravity", function (value) {
+            self.level.gravity = value;
+            onLevelChanged();
+        });
+        this.initShipMass = setupSlider("ShipMass", function (value) {
+            self.level.shipMass = value;
+            onLevelChanged();
+        });
+        this.initParticles = setupSlider("Particles", function (value) {
+            self.level.particleCount = Math.round(value);
+            onLevelChanged();
+        });
+        this.initParticleVel = setupSlider("ParticleVel", function (value) {
+            self.level.particleVelocity = value;
+            onLevelChanged();
+        });
+        this.initParticleMass = setupSlider("ParticleMass", function (value) {
+            self.level.particleMass = value;
+            onLevelChanged();
+        });
+
+        this.updateLevelEditors();
     };
+
+    SpaceView.prototype.updateLevelEditors = function() {
+        this.initGravity(this.space.gravity);
+        this.initShipMass(this.space.ship.shipMass);
+        this.initParticles(this.space.ship.particleCount);
+        this.initParticleVel(this.space.ship.particleVelocity);
+        this.initParticleMass(this.space.ship.particleMass);
+    }
 
     function canvasMatching(image) {
         var canvas = document.createElement('canvas');
@@ -270,7 +334,7 @@ var GREY = (function () {
         return [c, c, c, IMPROC.BYTE_MAX];
     }
 
-    SpaceView.prototype.loadLevel = function (index) {
+    SpaceView.prototype.loadLevel = function (index, updateEditors) {
         this.level = this.levels[index];
         this.levelIndex = index;
         var image = this.level.image,
@@ -288,6 +352,9 @@ var GREY = (function () {
             this.level.parts[p].build(space);
         }
         this.space = space;
+        if (updateEditors) {
+            this.updateLevelEditors();
+        }
     }
 
     function centerOffset(outer, inner) {
@@ -314,7 +381,7 @@ var GREY = (function () {
 
             if(this.space.isLevelCompleted) {
                 this.levelIndex += 1;
-                this.loadLevel(this.levelIndex);
+                this.loadLevel(this.levelIndex, true);
                 if (this.levelSelect) {
                     this.levelSelect.value = this.levelIndex;
                 }
