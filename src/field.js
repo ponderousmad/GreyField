@@ -227,7 +227,21 @@ var FIELD = (function () {
                 } else {
                     space.particles.splice(space.particles.indexOf(this),1);
                 }
-                //explode the thing
+                for (var x = Math.floor(explosive.pos.x - explosive.range); x <= Math.ceil(explosive.pos.x + explosive.range); x++){
+                    for (var y = Math.floor(explosive.pos.y - explosive.range); y <= Math.ceil(explosive.pos.y + explosive.range); x++){
+                        var pos = new R2.V(x,y),
+                            distance = R2.distance(pos,explosive.pos);
+                        if(distance < explosive.range) {
+                            var weight = 1 - (explosive.range - distance) / explosive.range, // 1 far away, 0 close
+                                pot = space.potential(pos.x,pos.y);
+                            if(explodesWhite) {
+                                space.setPotential(pos.x,pos.y, 1 - ((1-pot) * weight) )
+                            } else {
+                                space.setPotential(pos.x,pos.y,pot * weight);
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -270,7 +284,7 @@ var FIELD = (function () {
     function Explosive(position,type,size,range) {
         this.pos = position;
         this.size = size;
-        this.type = type; // false for black, true for white
+        this.explodesWhite = type; // false for black, true for white
         this.range = 50;
     }
 
