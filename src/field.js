@@ -18,6 +18,7 @@ var FIELD = (function () {
         this.exits = [];
         this.bombs = [];
         this.ship = null;
+        this.border = 100;
 
         this.isLevelCompleted = false;
         this.isLevelLost = false;
@@ -48,10 +49,9 @@ var FIELD = (function () {
         if(x >= 0 && x < this.width && y >= 0 && y < this.height) {
             return this.potentials[this.scalarIndex(x, y)];
         } else {
-            //return 0.01*Math.max(-x,-y,y-this.height,x-this.width) + 1;
             var x_off = Math.max(0,-x,x-this.width+1),
                 y_off = Math.max(0,-y,y-this.height+1);
-            return 0.01*Math.sqrt(x_off*x_off + y_off*y_off) + 1;
+            return (1 / this.border) * Math.sqrt(x_off*x_off + y_off*y_off) + 1;
         }
     }
 

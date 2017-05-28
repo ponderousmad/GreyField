@@ -202,8 +202,8 @@ var GREY = (function () {
                     self.xGrad = canvasMatching(self.level.image);
                     self.yGrad = canvasMatching(self.level.image);
 
-                    drawGradient(self.space, self.xGrad, null, xGradToPixel);
-                    drawGradient(self.space, self.yGrad, null, yGradToPixel);
+                    drawField(self.space, self.xGrad, null, xGradToPixel);
+                    drawField(self.space, self.yGrad, null, yGradToPixel);
                 }
             }, true);
         }
@@ -216,14 +216,14 @@ var GREY = (function () {
         return canvas;
     }
 
-    function drawGradient(space, canvas, context, gradFunc) {
+    function drawField(space, canvas, context, gradFunc) {
         if (!context) {
             context = canvas.getContext('2d');
         }
         var buffer = context.getImageData(0, 0, canvas.width, canvas.height);
-        for (var y = 0; y < space.height; ++y) {
-            for (var x = 0; x < space.width; ++x) {
-                var i = (y * space.width + x) * IMPROC.CHANNELS,
+        for (var y = 0; y < canvas.height; ++y) {
+            for (var x = 0; x < canvas.width; ++x) {
+                var i = (y * canvas.width + x) * IMPROC.CHANNELS,
                     result = gradFunc(space, x, y);
                 for (var c = 0; c < result.length; ++c) {
                     buffer.data[i + c] = result[c];
@@ -247,7 +247,7 @@ var GREY = (function () {
     }
 
     function potToPixel(space, x, y) {
-        var c = space.potential(x,y) * IMPROC.BYTE_MAX;
+        var c = Math.floor(space.potential(x - space.border, y - space.border) * 0.5 * IMPROC.BYTE_MAX);
         return [c, c, c, IMPROC.BYTE_MAX];
     }
 
@@ -260,8 +260,8 @@ var GREY = (function () {
             space.setPotential(x, y, r / IMPROC.BYTE_MAX);
         });
         this.level.setupShip(space);
-        this.potentialCanvas.width = image.width;
-        this.potentialCanvas.height = image.height;
+        this.potentialCanvas.width = image.width + 2 * space.border;
+        this.potentialCanvas.height = image.height + 2 * space.border;
         this.potentialContext.drawImage(image, 0, 0);
         this.xGrad = null;
         this.yGrad = null;
@@ -272,18 +272,20 @@ var GREY = (function () {
         this.space = space;
     }
 
+    function centerOffset(outer, inner) {
+        return Math.floor((outer - inner) * 0.5);
+    }
+
     SpaceView.prototype.update = function (now, elapsed, keyboard, pointer, width, height) {
         elapsed = Math.min(200, elapsed);
         if (this.space) {
-            var xOffset = Math.floor((width - this.space.width) * 0.5),
-                yOffset = Math.floor((height - this.space.height) * 0.5),
-                fire = false,
+            var fire = false,
                 fireAngle = 0;
 
             if (pointer.primary && pointer.primary.isStart) {
                 fire = true;
-                var levelX = pointer.primary.x - xOffset,
-                    levelY = pointer.primary.y - yOffset,
+                var levelX = pointer.primary.x - centerOffset(width, this.space.width),
+                    levelY = pointer.primary.y - centerOffset(height, this.space.height),
                     shipPos = this.space.ship.pos,
                     dx = levelX - shipPos.x,
                     dy = levelY - shipPos.y;
@@ -291,6 +293,12 @@ var GREY = (function () {
             }
 
             this.space.update(elapsed, 1, fire, fireAngle);
+
+            if (this.space.hasPotentialUpdated) {
+                this.space.hasPotentialUpdated = false;
+                drawField(this.space, this.potentialCanvas, this.potentialContext, potToPixel, true);
+                console.log("Updated Gradient");
+            }
 
             if(this.space.isLevelCompleted) {
                 this.levelIndex += 1;
@@ -305,18 +313,12 @@ var GREY = (function () {
         context.clearRect(0, 0, width, height);
         context.save();
         if (this.space) {
-            var xOffset = Math.floor((width - this.space.width) * 0.5),
-                yOffset = Math.floor((height - this.space.height) * 0.5);
-            context.translate(xOffset, yOffset);
-
-            if(this.space.hasPotentialUpdated){ // might need to go before the other stuff
-                this.space.hasPotentialUpdated = false;
-                drawGradient(this.space, this.potentialCanvas, this.potentialContext, potToPixel);
-                console.log("Updated Gradient");
-            }
-
+            context.translate(
+                centerOffset(width, this.space.width),
+                centerOffset(height, this.space.height)
+            );
             if (this.level) {
-                BLIT.draw(context, this.potentialCanvas, 0, 0, BLIT.ALIGN.TopLeft);
+                BLIT.draw(context, this.potentialCanvas, -this.space.border, -this.space.border, BLIT.ALIGN.TopLeft);
             }
 
             if (this.xGrad) {
