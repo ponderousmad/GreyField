@@ -6,6 +6,7 @@ var GREY = (function () {
         data.x = pos.x;
         data.y = pos.y;
         data.size = size;
+        return data;
     }
 
     function makeExit(data, pos, size) {
@@ -55,7 +56,7 @@ var GREY = (function () {
                 if (range) {
                     saveData.range = range;
                 }
-                return savePart({}, "bomb", pos);
+                return savePart(saveData, "bomb", pos, size);
             },
             build: function (space) {
                 space.addBomb(pos, type, size, range);
@@ -117,11 +118,12 @@ var GREY = (function () {
         }
 
         var parts = [];
-
-        for (var p = 0; e < this.parts.length; ++p) {
+        for (var p = 0; p < this.parts.length; ++p) {
             parts.push(this.parts[p].save());
         }
-
+        if (parts.length > 0) {
+            data.parts = parts;
+        }
         return data;
     }
 
@@ -184,18 +186,20 @@ var GREY = (function () {
     }
 
     SpaceView.prototype.setupControls = function () {
+        var showGradients = document.getElementById("buttonShowGrads"),
+            saveButton = document.getElementById("buttonClipboard"),
+            editArea = document.getElementById("textData"),
+            self = this;
         this.levelSelect = document.getElementById("selectLevel");
         if (this.levelSelect) {
             this.levelSelect.addEventListener("change", function (e) {
                 self.loadLevel(parseInt(self.levelSelect.value));
             }, true);
-            for (var l = 0, self = this ; l < this.levels.length; ++l) {
+            for (var l = 0; l < this.levels.length; ++l) {
                 self.levelSelect.appendChild(new Option(l + ": " + this.levels[l].resource.slice(0, -4), l));
             }
         }
 
-        var showGradients = document.getElementById("buttonShowGrads"),
-            self = this;
         if (showGradients) {
             showGradients.addEventListener("click", function (e) {
                 if (self.space) {
@@ -205,6 +209,21 @@ var GREY = (function () {
                     drawField(self.space, self.xGrad, null, xGradToPixel);
                     drawField(self.space, self.yGrad, null, yGradToPixel);
                 }
+            }, true);
+        }
+
+        if (saveButton) {
+            saveButton.addEventListener("click", function () {
+                var data = {},
+                    levels = [];
+                for (var l = 0; l < self.levels.length; ++l) {
+                    levels.push(self.levels[l].save());
+                }
+                data.levels = levels;
+                editArea.value = JSON.stringify(data, null, 4) + "\n";
+                editArea.select();
+                editArea.focus();
+                document.execCommand("copy");
             }, true);
         }
     };
