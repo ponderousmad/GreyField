@@ -22,7 +22,7 @@ var GREY = (function () {
         );
     };
 
-    Level.prototype.batch = function(batch) {
+    Level.prototype.batch = function (batch) {
         this.image = batch.load(this.resource);
     };
 
