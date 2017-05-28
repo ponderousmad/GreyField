@@ -158,6 +158,15 @@ var GREY = (function () {
         this.xGrad = null;
         this.yGrad = null;
 
+        var self = this;
+        this.batch = new BLIT.Batch("images/", function () {
+            self.loadLevel(0);
+            self.setupControls();
+        });
+
+        this.whiteBombImage = this.batch.load("white_bomb.png");
+        this.blackBombImage = this.batch.load("black_bomb.png");
+
         IO.downloadJSON("levels.json", function (data) {
             self.loadLevelData(data);
         });
@@ -166,11 +175,6 @@ var GREY = (function () {
     SpaceView.prototype.loadLevelData = function (data) {
         this.levels = [];
 
-        var self = this;
-        this.batch = new BLIT.Batch("images/", function () {
-            self.loadLevel(0);
-            self.setupControls();
-        });
         for (var l = 0; l < data.levels.length; ++l) {
             var level = new Level(data.levels[l]);
             this.levels.push(level);
@@ -323,24 +327,11 @@ var GREY = (function () {
                 context.fill();
             }
 
-            context.fillStyle = "red";
-            for (var p = 0; p < this.space.bombs.length; ++p) {
-                var explosive = this.space.bombs[p];
-                var new_image = new Image();
-                if(explosive.explodesWhite) {
-                    new_image.src = 'images/white_bomb.png';
-                } else {
-                    new_image.src = 'images/black_bomb.png';
-                }
-                new_image.onload = function(){
-                    //context.drawImage(new_image, explosive.pos.x + xOffset, explosive.pos.y + yOffset);
-                }
-                context.beginPath();
-                context.arc(explosive.pos.x + xOffset, explosive.pos.y + yOffset, 5, 0, 2*Math.PI);
-                context.fill();
-
+            for (var b = 0; b < this.space.bombs.length; ++b) {
+                var bomb = this.space.bombs[b],
+                    bombImage = bomb.explodesWhite ? this.whiteBombImage : this.blackBombImage;
+                BLIT.draw(context, bombImage, bomb.pos.x + xOffset, bomb.pos.y + yOffset, BLIT.ALIGN.Center);
             }
-
         }
     };
 
