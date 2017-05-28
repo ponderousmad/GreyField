@@ -14,6 +14,19 @@
             ]
         },
         {
+            "resource": "grey_square.png",
+            "shipX": 80,
+            "shipY": 50,
+            "particleVelocity": 0.5,
+            "parts": [
+                {
+                    "type": "exit",
+                    "x": 320,
+                    "y": 200
+                }
+            ]
+        },
+        {
             "resource": "path_edited.png",
             "shipX": 115,
             "shipY": 195,
@@ -24,19 +37,6 @@
                     "type": "exit",
                     "x": 480,
                     "y": 300
-                }
-            ]
-        },
-        {
-            "resource": "grey_square.png",
-            "shipX": 80,
-            "shipY": 50,
-            "particleVelocity": 0.5,
-            "parts": [
-                {
-                    "type": "exit",
-                    "x": 320,
-                    "y": 200
                 }
             ]
         },
