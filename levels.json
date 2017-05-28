@@ -1,7 +1,7 @@
 {
     "levels": [
         {
-            "resource": "simple.png",
+            "resource": "simple_edited.png",
             "shipX": 150,
             "shipY": 200,
             "particleCount": 2,
@@ -14,31 +14,31 @@
             ]
         },
         {
-            "resource": "path.png",
+            "resource": "path_edited.png",
             "shipX": 115,
             "shipY": 195,
             "particleMass": 4,
             "particleVelocity": 0.2,
             "parts": [
                 {
-                    "exponent": 1,
-                    "type": "planet",
-                    "x": 390,
-                    "y": 100,
-                    "size": 20
+                    "type": "exit",
+                    "x": 480,
+                    "y": 300
                 }
             ]
-        },
-        {
-            "resource": "normalspace.png",
-            "shipX": 50,
-            "shipY": 50
         },
         {
             "resource": "grey_square.png",
             "shipX": 80,
             "shipY": 50,
-            "particleVelocity": 0.5
+            "particleVelocity": 0.5,
+            "parts": [
+                {
+                    "type": "exit",
+                    "x": 320,
+                    "y": 200
+                }
+            ]
         },
         {
             "resource": "wells.png",
@@ -113,6 +113,11 @@
             "resource": "final_level.png",
             "shipX": 100,
             "shipY": 100
+        },
+        {
+            "resource": "normalspace.png",
+            "shipX": 50,
+            "shipY": 50
         }
     ]
 }
