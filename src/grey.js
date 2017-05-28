@@ -182,6 +182,7 @@ var GREY = (function () {
         this.levelIndex = -1;
         this.potentialCanvas = document.createElement('canvas');
         this.potentialContext = this.potentialCanvas.getContext('2d');
+        this.selectedPart = null;
 
         this.xGrad = null;
         this.yGrad = null;
@@ -217,6 +218,8 @@ var GREY = (function () {
         var showGradients = document.getElementById("buttonShowGrads"),
             saveButton = document.getElementById("buttonClipboard"),
             editArea = document.getElementById("textData"),
+            createPart = document.getElementById("buttonCreatePart"),
+            updatePart = document.getElementById("buttonUpdatePart"),
             self = this;
 
         this.levelSelect = document.getElementById("selectLevel");
@@ -284,8 +287,8 @@ var GREY = (function () {
             };
         }
 
-        function onLevelChanged() {
-            self.loadLevel(self.levelIndex);
+        function onLevelChanged(updateEditors) {
+            self.loadLevel(self.levelIndex, updateEditors);
         }
 
         this.initGravity = setupSlider("Gravity", function (value) {
@@ -318,6 +321,41 @@ var GREY = (function () {
             }, true);
         }
 
+        function setupPart() {
+            if (self.partEdit && self.selectPartType) {
+                var partData = JSON.parse(self.partEdit.value);
+                partData.type = self.selectPartType.value;
+                return loadPart(partData);
+            }
+            return null;
+        }
+
+        if (createPart) {
+            createPart.addEventListener("click", function(e) {
+                var newPart = setupPart();
+                if (newPart !== null) {
+                    self.level.parts.push(newPart);
+                    onLevelChanged(true);
+                    var selected = self.level.parts.length - 1;
+                    self.partSelect.value = selected;
+                    self.selectPart(selected);
+                }
+            }, true);
+        }
+
+        if (updatePart) {
+            updatePart.addEventListener("click", function(e) {
+                var newPart = setupPart();
+                if (newPart !== null) {
+                    var selected = self.selectedPart;
+                    self.level.parts[selected] = newPart;
+                    onLevelChanged(true);
+                    self.partSelect.value = selected;
+                    self.selectPart(selected);
+                }
+            }, true);
+        }
+
         this.updateLevelEditors();
     };
 
@@ -337,6 +375,8 @@ var GREY = (function () {
         }
         if (this.level.parts.length > 0) {
             this.selectPart(0);
+        } else {
+            this.selectedPart = null;
         }
     };
 
