@@ -5,23 +5,30 @@ var FIELD = (function () {
         return (x % 1) * a + (1-(x % 1)) * b;
     }
 
-    function Space(width, height) {
+    function Space(width, height, gravity) {
         this.width = width;
         this.height = height;
         var size = width * height;
         this.potentials = new Float32Array(size);
         this.grads = new Float32Array(size * 2);
         this.particles = [];
+        this.gravity = gravity || 0.005;
         this.fuels = [];
         this.ends = [];
-        this.gravity = 0.005;
         this.ship = null;
 
         this.isLevelCompleted = false;
     }
 
-    Space.prototype.setupShip = function (shipPosition) {
-        this.ship = new Ship(2, shipPosition, 2, 5, 0.1, this)
+    Space.prototype.setupShip = function (shipPosition, shipMass, particleMass, particleCount, particleVelocity) {
+        this.ship = new Ship(
+            shipMass || 2,
+            shipPosition,
+            particleMass || 1,
+            particleCount || 5,
+            particleVelocity || 0.1,
+            this
+        );
     };
 
     Space.prototype.scalarIndex = function (x, y) {

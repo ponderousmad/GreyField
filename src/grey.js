@@ -4,8 +4,23 @@ var GREY = (function () {
     function Level(data) {
         this.resource = data.resource;
         this.image = null;
+        this.gravity = data.gravity;
         this.shipPosition = new R2.V(data.shipX, data.shipY);
+        this.shipMass = data.shipMass;
+        this.particleCount = data.particleCount;
+        this.particleMass = data.particleMass;
+        this.particleVelocity = data.particleVelocity;
     }
+
+    Level.prototype.setupShip = function (space) {
+        space.setupShip(
+            this.shipPosition.clone(),
+            this.shipMass,
+            this.particleMass,
+            this.particleCount,
+            this.particleVelocity
+        );
+    };
 
     Level.prototype.batch = function(batch) {
         this.image = batch.load(this.resource);
@@ -15,30 +30,32 @@ var GREY = (function () {
         this.maximize = true;
         this.updateInDraw = true;
 
-        this.levels = [
-            new Level({resource: "simple.png", shipX: 150, shipY: 200 }),
-            new Level({resource: "normalspace.png", shipX: 50, shipY: 50 }),
-            new Level({resource: "grey_square.png", shipX: 80, shipY: 50 }),
-            new Level({resource: "wells.png", shipX: 100, shipY: 100 }),
-            new Level({resource: "ring.png", shipX: 320, shipY: 200 }),
-            new Level({resource: "cloud.png", shipX: 100, shipY: 100 }),
-            new Level({resource: "spiral.png", shipX: 100, shipY: 100 })
-        ];
+        this.levels = null;
 
         var self = this;
-
-        this.batch = new BLIT.Batch("images/", function () {
-            self.loadLevel(0);
-        });
-        for (var l = 0; l < this.levels.length; ++l) {
-            this.levels[l].batch(this.batch);
-        }
-        this.batch.commit();
 
         this.space = null;
         this.level = null;
 
-        this.setupControls();
+        IO.downloadJSON("levels.json", function (data) {
+            self.loadLevelData(data);
+        });
+    }
+
+    SpaceView.prototype.loadLevelData = function (data) {
+        this.levels = [];
+
+        var self = this;
+        this.batch = new BLIT.Batch("images/", function () {
+            self.loadLevel(0);
+            self.setupControls();
+        });
+        for (var l = 0; l < data.levels.length; ++l) {
+            var level = new Level(data.levels[l]);
+            this.levels.push(level);
+            level.batch(this.batch);
+        }
+        this.batch.commit();
     }
 
     SpaceView.prototype.setupControls = function () {
@@ -91,12 +108,12 @@ var GREY = (function () {
     SpaceView.prototype.loadLevel = function (index) {
         this.level = this.levels[index];
         var image = this.level.image,
-            space = new FIELD.Space(image.width, image.height);
+            space = new FIELD.Space(image.width, image.height, this.level.gravity);
         IMPROC.processImage(image, 0, 0, image.width, image.height, function (x, y, r, g, b, a) {
             space.setPotential(x, y, r / IMPROC.BYTE_MAX);
         });
         space.computeGrads();
-        space.setupShip(this.level.shipPosition.clone());
+        this.level.setupShip(space);
 
         this.xGrad = canvasMatching(image);
         this.yGrad = canvasMatching(image);
