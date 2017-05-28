@@ -45,26 +45,26 @@ var FIELD = (function () {
             B = T+1, // bottom
             L = Math.floor(pos.x), // left
             R = L+1, // right
-            TL = this.potential(T,L),
-            TR = this.potential(T,R),
-            BL = this.potential(B,L),
-            BR = this.potential(B,R),
+            TL = this.potential(L,T),
+            TR = this.potential(R,T),
+            BL = this.potential(L,B),
+            BR = this.potential(R,B),
             topPot = lerp(TL,TR,pos.x),
             botPot = lerp(BL,BR,pos.x);
         return lerp(topPot,botPot,pos.y);
     }
 
     Space.prototype.closestGradient = function(pos) {
-        var T = Math.floor(pos.x), // top
+        var T = Math.floor(pos.y), // top
             B = T+1, // bottom
-            L = Math.floor(pos.y), // left
+            L = Math.floor(pos.x), // left
             R = L+1, // right
-            TL = this.potential(T,L),
-            TR = this.potential(T,R),
-            BL = this.potential(B,L),
-            BR = this.potential(B,R),
-            y_grad = lerp(TL-TR,BL-BR,pos.x) * this.gravity,
-            x_grad = lerp(TR-BR,TL-BL,pos.y) * this.gravity;
+            TL = this.potential(L,T),
+            TR = this.potential(R,T),
+            BL = this.potential(L,B),
+            BR = this.potential(R,B),
+            x_grad = lerp(TL-TR,BL-BR,pos.x) * this.gravity,
+            y_grad = lerp(TR-BR,TL-BL,pos.y) * this.gravity;
         return new R2.V(x_grad,y_grad);
     }
 
@@ -129,7 +129,7 @@ var FIELD = (function () {
     };
 
     Ship.prototype.calcEnergy = function(space){
-        this.energy = 0.5 * this.vel.lengthSq() + space.closestPotential(new R2.V(this.pos.y,this.pos.x)) * space.gravity;
+        this.energy = 0.5 * this.vel.lengthSq() + space.closestPotential(this.pos) * space.gravity;
         this.energy *= this.mass;
     }
     
@@ -184,14 +184,14 @@ var FIELD = (function () {
                 distance = R2.addVectors(this.pos, fuel.pos.scaled(-1));
             if(distance.lengthSq() < this.size * this.size + fuel.size * fuel.size) {
                 space.fuels.splice(i,1);
-                this.particleCount += fuel.mass/this.particleMass;
+                this.particleCount += fuel.particles;
                 this.particleVelocity += fuel.boost;
                 this.calculateMass();
-                this.energy += fuel.mass * Math.max(space.closestPotential(new R2.V(this.pos.y,this.pos.x)), space.closestPotential(new R2.V(fuel.pos.y,fuel.pos.x))) * space.gravity;
+                this.energy += fuel.particles  * this.particleMass * Math.max(space.closestPotential(this.pos), space.closestPotential(fuel.pos)) * space.gravity;
             }
         }
 
-        var finalPotential = this.mass * space.closestPotential(new R2.V(this.pos.y,this.pos.x)) * space.gravity;
+        var finalPotential = this.mass * space.closestPotential(this.pos) * space.gravity;
         if(finalPotential > this.energy) {
             this.vel.scale(0);
         } else {
@@ -208,13 +208,13 @@ var FIELD = (function () {
         this.pos = position;
         this.vel = velocity;
         this.radius = 2;
-        this.energy = 0.5 * this.vel.lengthSq() + space.closestPotential(new R2.V(this.pos.y,this.pos.x)) * space.gravity;
+        this.energy = 0.5 * this.vel.lengthSq() + space.closestPotential(this.pos) * space.gravity;
         this.usesFuel = false;
     }
 
-    function Fuel(mass,position,boost) {
+    function Fuel(particles,position,boost) {
         this.pos = position;
-        this.mass = mass;
+        this.particles = particles;
         this.size = 5;
         this.boost = boost || 0;
     }
