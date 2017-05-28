@@ -149,6 +149,7 @@ var GREY = (function () {
 
         this.space = null;
         this.level = null;
+        this.levelIndex = -1;
         this.potentialCanvas = document.createElement('canvas');
         this.potentialContext = this.potentialCanvas.getContext('2d');
 
@@ -252,6 +253,7 @@ var GREY = (function () {
 
     SpaceView.prototype.loadLevel = function (index) {
         this.level = this.levels[index];
+        this.levelIndex = index;
         var image = this.level.image,
             space = new FIELD.Space(image.width, image.height, this.level.gravity);
         IMPROC.processImage(image, 0, 0, image.width, image.height, function (x, y, r, g, b, a) {
@@ -296,6 +298,13 @@ var GREY = (function () {
                 this.space.hasPotentialUpdated = false;
                 drawField(this.space, this.potentialCanvas, this.potentialContext, potToPixel, true);
                 console.log("Updated Gradient");
+            }
+
+            if(this.space.isLevelCompleted) {
+                this.levelIndex += 1;
+                this.loadLevel(this.levelIndex);
+            } else if (this.space.isLevelLost) {
+                this.loadLevel(this.levelIndex);
             }
         }
     };
