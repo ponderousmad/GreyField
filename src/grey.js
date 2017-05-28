@@ -296,6 +296,9 @@ var GREY = (function () {
             if(this.space.isLevelCompleted) {
                 this.levelIndex += 1;
                 this.loadLevel(this.levelIndex);
+                if (this.levelSelect) {
+                    this.levelSelect.value = this.levelIndex;
+                }
             } else if (this.space.isLevelLost) {
                 this.loadLevel(this.levelIndex);
             }
