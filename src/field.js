@@ -14,7 +14,10 @@ var FIELD = (function () {
         this.particles = [];
         this.gravity = gravity || 0.005;
         this.fuels = [];
+        this.ends = [];
         this.ship = null;
+
+        this.isLevelCompleted = false;
     }
 
     Space.prototype.setupShip = function (shipPosition, shipMass, particleMass, particleCount, particleVelocity) {
@@ -186,15 +189,26 @@ var FIELD = (function () {
             this.timestep(space,0.5*time);
         }
 
+        // COLLISION CODE BLOCK: 
         for(var i = 0; i < space.fuels.length; i++){
             var fuel = space.fuels[i],
-                distance = R2.addVectors(this.pos, fuel.pos.scaled(-1));
-            if(distance.lengthSq() < this.size * this.size + fuel.size * fuel.size) {
+                distance = R2.pointDistance(this.pos, fuel.pos);
+            if(distance < this.size + fuel.size) {
                 space.fuels.splice(i,1);
                 this.particleCount += fuel.particles;
                 this.particleVelocity += fuel.boost;
                 this.calculateMass();
                 this.energy += fuel.particles  * this.particleMass * Math.max(space.closestPotential(this.pos), space.closestPotential(fuel.pos)) * space.gravity;
+            }
+        }
+
+        for(var i = 0; i < space.ends.length; i++){
+            var end = space.ends[i],
+                distance = R2.pointDistance(this.pos, end.pos);
+            if(distance < this.size + end.size) {
+                space.ends.splice(i,1);
+                space.isLevelCompleted = true;
+                this.energy = -1;
             }
         }
 
@@ -226,12 +240,17 @@ var FIELD = (function () {
         this.boost = boost || 0;
     }
 
+    function End(position,size) {
+        this.pos = position;
+        this.size = size;
+    }
+
     Particle.prototype.timestep = Ship.prototype.timestep;
 
     return {
         Space : Space,
-        Ship : Ship,
-        Particle : Particle,
+        Fuel : Fuel,
+        End : End
     }
 }());
 
