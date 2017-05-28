@@ -1,6 +1,8 @@
 var FIELD = (function () {
     "use strict";
 
+    var explodeSound = new BLORT.Noise("audio/Boom.wav");
+
     function lerp (a, b, x){
         return (x % 1) * a + (1-(x % 1)) * b;
     }
@@ -305,6 +307,7 @@ var FIELD = (function () {
             }
         }
         space.hasPotentialUpdated = true;
+        explodeSound.play();
     }
 
     Particle.prototype.timestep = Ship.prototype.timestep;
