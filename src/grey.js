@@ -6,6 +6,7 @@ var GREY = (function () {
         data.x = pos.x;
         data.y = pos.y;
         data.size = size;
+        return data;
     }
 
     function makeExit(data, pos, size) {
@@ -55,7 +56,7 @@ var GREY = (function () {
                 if (range) {
                     saveData.range = range;
                 }
-                return savePart({}, "bomb", pos);
+                return savePart(saveData, "bomb", pos, size);
             },
             build: function (space) {
                 space.addBomb(pos, type, size, range);
@@ -117,11 +118,12 @@ var GREY = (function () {
         }
 
         var parts = [];
-
-        for (var p = 0; e < this.parts.length; ++p) {
+        for (var p = 0; p < this.parts.length; ++p) {
             parts.push(this.parts[p].save());
         }
-
+        if (parts.length > 0) {
+            data.parts = parts;
+        }
         return data;
     }
 
@@ -184,18 +186,21 @@ var GREY = (function () {
     }
 
     SpaceView.prototype.setupControls = function () {
+        var showGradients = document.getElementById("buttonShowGrads"),
+            saveButton = document.getElementById("buttonClipboard"),
+            editArea = document.getElementById("textData"),
+            self = this;
+
         this.levelSelect = document.getElementById("selectLevel");
         if (this.levelSelect) {
             this.levelSelect.addEventListener("change", function (e) {
-                self.loadLevel(parseInt(self.levelSelect.value));
+                self.loadLevel(parseInt(self.levelSelect.value), true);
             }, true);
-            for (var l = 0, self = this ; l < this.levels.length; ++l) {
+            for (var l = 0; l < this.levels.length; ++l) {
                 self.levelSelect.appendChild(new Option(l + ": " + this.levels[l].resource.slice(0, -4), l));
             }
         }
 
-        var showGradients = document.getElementById("buttonShowGrads"),
-            self = this;
         if (showGradients) {
             showGradients.addEventListener("click", function (e) {
                 if (self.space) {
@@ -207,7 +212,85 @@ var GREY = (function () {
                 }
             }, true);
         }
+
+        if (saveButton) {
+            saveButton.addEventListener("click", function () {
+                var data = {},
+                    levels = [];
+                for (var l = 0; l < self.levels.length; ++l) {
+                    levels.push(self.levels[l].save());
+                }
+                data.levels = levels;
+                editArea.value = JSON.stringify(data, null, 4) + "\n";
+                editArea.select();
+                editArea.focus();
+                document.execCommand("copy");
+            }, true);
+        }
+
+        function setupSlider(idBase, handleChange) {
+            var slider = document.getElementById("slider" + idBase),
+                value = document.getElementById("value" + idBase);
+            if (slider) {
+                slider.addEventListener("input", function (e) {
+                    if (value) {
+                        value.value = slider.value;
+                    }
+                    handleChange(parseFloat(slider.value));
+                });
+            }
+            if (value) {
+                value.addEventListener("change", function (e) {
+                    if (!isNaN(value.value)) {
+                        if (slider) {
+                            slider.value = value.value;
+                        }
+                        handleChange(parseFloat(value.value));
+                    }
+                });
+            }
+
+            return function(initialValue) {
+                if (value) { value.value = initialValue; }
+                if (slider) { slider.value = initialValue; }
+            };
+        }
+
+        function onLevelChanged() {
+            self.loadLevel(self.levelIndex);
+        }
+
+        this.initGravity = setupSlider("Gravity", function (value) {
+            self.level.gravity = value;
+            onLevelChanged();
+        });
+        this.initShipMass = setupSlider("ShipMass", function (value) {
+            self.level.shipMass = value;
+            onLevelChanged();
+        });
+        this.initParticles = setupSlider("Particles", function (value) {
+            self.level.particleCount = Math.round(value);
+            onLevelChanged();
+        });
+        this.initParticleVel = setupSlider("ParticleVel", function (value) {
+            self.level.particleVelocity = value;
+            onLevelChanged();
+        });
+        this.initParticleMass = setupSlider("ParticleMass", function (value) {
+            self.level.particleMass = value;
+            onLevelChanged();
+        });
+
+        this.updateLevelEditors();
     };
+
+    SpaceView.prototype.updateLevelEditors = function() {
+        this.initGravity(this.space.gravity);
+        this.initShipMass(this.space.ship.shipMass);
+        this.initParticles(this.space.ship.particleCount);
+        this.initParticleVel(this.space.ship.particleVelocity);
+        this.initParticleMass(this.space.ship.particleMass);
+    }
 
     function canvasMatching(image) {
         var canvas = document.createElement('canvas');
@@ -251,7 +334,7 @@ var GREY = (function () {
         return [c, c, c, IMPROC.BYTE_MAX];
     }
 
-    SpaceView.prototype.loadLevel = function (index) {
+    SpaceView.prototype.loadLevel = function (index, updateEditors) {
         this.level = this.levels[index];
         this.levelIndex = index;
         var image = this.level.image,
@@ -262,7 +345,6 @@ var GREY = (function () {
         this.level.setupShip(space);
         this.potentialCanvas.width = image.width + 2 * space.border;
         this.potentialCanvas.height = image.height + 2 * space.border;
-        this.potentialContext.drawImage(image, 0, 0);
         this.xGrad = null;
         this.yGrad = null;
 
@@ -270,6 +352,9 @@ var GREY = (function () {
             this.level.parts[p].build(space);
         }
         this.space = space;
+        if (updateEditors) {
+            this.updateLevelEditors();
+        }
     }
 
     function centerOffset(outer, inner) {
@@ -294,17 +379,20 @@ var GREY = (function () {
 
             this.space.update(elapsed, 1, fire, fireAngle);
 
+            if(this.space.isLevelCompleted) {
+                this.levelIndex += 1;
+                this.loadLevel(this.levelIndex, true);
+                if (this.levelSelect) {
+                    this.levelSelect.value = this.levelIndex;
+                }
+            } else if (this.space.isLevelLost) {
+                this.loadLevel(this.levelIndex);
+            }
+
             if (this.space.hasPotentialUpdated) {
                 this.space.hasPotentialUpdated = false;
                 drawField(this.space, this.potentialCanvas, this.potentialContext, potToPixel, true);
                 console.log("Updated Gradient");
-            }
-
-            if(this.space.isLevelCompleted) {
-                this.levelIndex += 1;
-                this.loadLevel(this.levelIndex);
-            } else if (this.space.isLevelLost) {
-                this.loadLevel(this.levelIndex);
             }
         }
     };

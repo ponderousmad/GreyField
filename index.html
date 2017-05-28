@@ -30,11 +30,6 @@
             </div>
                 <form>
                     <div>
-                        <div class="slider">
-                            <div class="beside">Gravity:</div>
-                            <input type="number" class="linearValue" id="valueGravity">
-                            <input id="sliderGravity" class="linearSlider" type="range" min="0.01" max="200" step="0.01">
-                        </div>
                         <div>
                             <span>
                                 Levels:
@@ -42,15 +37,58 @@
                                 </select>
                             </span>
                             <div class="slider">
-                                <div class="beside">Height:</div>
-                                <input type="number" class="linearValue" id="valueHeight">
-                                <input class="linearSlider" id="sliderHeight" type="range" min="-0.05" max= "8" step="0.001" value="0">
+                                <div class="beside">Gravity:</div>
+                                <input id="valueGravity" type="number" class="linearValue">
+                                <input id="sliderGravity" class="linearSlider" type="range" min="0.001" max="0.1" step="0.001">
+                            </div>
+                            <div class="slider">
+                                <div class="beside">Ship Mass:</div>
+                                <input id="valueShipMass" type="number" class="linearValue">
+                                <input id="sliderShipMass" class="linearSlider" type="range" min="0.05" max= "20" step="0.001" value="0">
+                            </div>
+                            <div class="slider">
+                                <div class="beside">Particles:</div>
+                                <input id="valueParticles" type="number" class="linearValue">
+                            </div>
+                            <div class="slider">
+                                <div class="beside">Particle Mass:</div>
+                                <input  id="valueParticleMass" type="number" class="linearValue">
+                                <input id="sliderParticleMass" class="linearSlider" type="range" min="0.05" max= "10" step="0.001" value="0">
+                            </div>
+                            <div class="slider">
+                                <div class="beside">Particle Velocity:</div>
+                                <input  id="valueParticleVel" type="number" class="linearValue">
+                                <input id="sliderParticleVel" class="linearSlider" type="range" min="0.05" max= "5" step="0.001" value="0">
+                            </div>
+                            <span>
+                                Parts:
+                                <select name="select" id="selectPart">
+                                </select>
+                            </span>
+                            <div>
+                                <span>
+                                    Type:
+                                    <select name="select" id="selectPartType">
+                                        <option value="exit">Exit</option>
+                                        <option value="fuel">Fuel</option>
+                                        <option value="bomb">Bomb</option>
+                                        <option value="planet">Planet</option>
+                                    </select>
+                                </span>
+                                <div>
+                                  <textarea id="textPartData" rows="5" cols="34"></textarea>
+                                </div>
                             </div>
                         </div>
+                        <div>
+                            <button id="buttonCreatePart" type="button">Create Part</button>
+                            <button id="buttonPlacePart" type="button">Place Part</button>
+                        </div>
+                        <div>
+                            <button id="buttonClipboard" type="button">Copy To Clipboard</button>
+                            <button id="buttonShowGrads" type="button">Show Gradients</button>
+                        </div>
                     </div>
-                    <button id="buttonClipboard" type="button">Copy To Clipboard</button>
-                    <button id="buttonEdit" type="button">Toggle Edit Mode</button>
-                    <button id="buttonShowGrads" type="button">Show Gradients</button>
                 </form>
                 <textarea id="textData" rows="10" cols="34"></textarea>
             </div>
