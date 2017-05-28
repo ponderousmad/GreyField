@@ -215,6 +215,52 @@
             "resource": "normalspace.png",
             "shipX": 50,
             "shipY": 50
+        },
+        {
+            "resource": "white.png",
+            "shipX": 320,
+            "shipY": 200,
+            "parts": [
+                {
+                    "type": "exit",
+                    "x": 420,
+                    "y": 320
+                },
+                {
+                    "type": "planet",
+                    "x": 220,
+                    "y": 200,
+                    "size": 10
+                },
+                {
+                    "type": "planet",
+                    "x": 420,
+                    "y": 200,
+                    "size": 10
+                },
+                {
+                    "type": "planet",
+                    "x": 320,
+                    "y": 100,
+                    "size": 10
+                },
+                {
+                    "type": "planet",
+                    "x": 320,
+                    "y": 300,
+                    "size": 10
+                }
+            ]
+        },
+        {
+            "resource": "spiralEdged.png",
+            "shipX": 320,
+            "shipY": 200
+        },
+        {
+            "resource": "white.png",
+            "shipX": 320,
+            "shipY": 200
         }
     ]
 }
