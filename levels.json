@@ -21,11 +21,11 @@
             "particleVelocity": 0.2,
             "parts": [
                 {
+                    "exponent": 1,
                     "type": "planet",
                     "x": 390,
                     "y": 100,
-                    "exponent": 1,
-                    "size": 100
+                    "size": 20
                 }
             ]
         },
@@ -51,8 +51,9 @@
             "shipY": 200,
             "parts": [
                 {
-                    "type": "bomb",
+                    "bombType": "black",
                     "range": 50,
+                    "type": "bomb",
                     "x": 320,
                     "y": 290,
                     "size": 10
@@ -67,19 +68,36 @@
         {
             "resource": "spiral.png",
             "shipX": 100,
-            "shipY": 100
+            "shipY": 100,
+            "gravity": 0.1,
+            "parts": [
+                {
+                    "exponent": 1,
+                    "type": "planet",
+                    "x": 310,
+                    "y": 190,
+                    "size": 20
+                },
+                {
+                    "type": "exit",
+                    "x": 310,
+                    "y": 190
+                }
+            ]
         },
         {
             "resource": "exploding_wall.png",
             "shipX": 85,
             "shipY": 105,
+            "gravity": 0.051,
             "shipMass": 10,
             "particleCount": 2,
             "particleVelocity": 0.5,
             "parts": [
                 {
-                    "type": "bomb",
+                    "bombType": "black",
                     "range": 50,
+                    "type": "bomb",
                     "x": 210,
                     "y": 180,
                     "size": 10
