@@ -14,9 +14,15 @@ var FIELD = (function () {
         this.gravity = gravity || 0.05;
         this.fuels = [];
         this.ends = [];
+        this.explosives = [];
         this.ship = null;
 
         this.isLevelCompleted = false;
+        this.isLevelLost = false;
+
+        this.hasPotentialUpdated = true;
+
+        this.explosives.push(new Explosive(new R2.V(300,300),false,5,50));
     }
 
     Space.prototype.setupShip = function (shipPosition, shipMass, particleMass, particleCount, particleVelocity) {
@@ -104,8 +110,10 @@ var FIELD = (function () {
         this.particleCount = particleCount;
         this.pos = position;
         this.vel = new R2.V(0, 0);
-        this.radius = 5;
+        this.size = 5;
         this.usesFuel = true;
+        this.endsLevel = true;
+        this.losesGameOnExplosion = true;
 
         this.calculateMass();
         this.calcEnergy(space);
@@ -167,7 +175,7 @@ var FIELD = (function () {
         }
 
         // COLLISION CODE BLOCK: 
-        for(var i = 0; i < space.fuels.length; i++){
+        for(var i = 0; i < space.fuels.length && this.usesFuel; i++){
             var fuel = space.fuels[i],
                 distance = R2.pointDistance(this.pos, fuel.pos);
             if(distance < this.size + fuel.size) {
@@ -179,13 +187,45 @@ var FIELD = (function () {
             }
         }
 
-        for(var i = 0; i < space.ends.length; i++){
+        for(var i = 0; i < space.ends.length && this.endsLevel; i++){
             var end = space.ends[i],
                 distance = R2.pointDistance(this.pos, end.pos);
             if(distance < this.size + end.size) {
                 space.ends.splice(i,1);
                 space.isLevelCompleted = true;
                 this.energy = -1;
+            }
+        }
+
+        for(var i = 0; i < space.explosives.length; i++){
+            var explosive = space.explosives[i],
+                distance = R2.pointDistance(this.pos, explosive.pos);
+            if(distance < this.size + explosive.size) {
+                console.log("explosion occured");
+                space.explosives.splice(i,1);
+                if(this.losesGameOnExplosion) {
+                    this.energy = -1;
+                    this.pos = new R2.V(-100,-100);
+                    space.isLevelLost = true;
+                } else {
+                    space.particles.splice(space.particles.indexOf(this),1);
+                }
+                for (var x = Math.floor(explosive.pos.x - explosive.range); x <= Math.ceil(explosive.pos.x + explosive.range); x++){
+                    for (var y = Math.floor(explosive.pos.y - explosive.range); y <= Math.ceil(explosive.pos.y + explosive.range); y++){
+                        var pos = new R2.V(x,y),
+                            distance = R2.pointDistance(pos,explosive.pos);
+                        if(distance < explosive.range) {
+                            console.log("changing values");
+                            var weight = 1 - (explosive.range - distance) / explosive.range, // 1 far away, 0 close
+                                pot = space.potential(pos.x,pos.y);
+                            if(explosive.explodesWhite) {
+                                space.setPotential(pos.x,pos.y, 1 - ((1-pot) * weight) )
+                            } else {
+                                space.setPotential(pos.x,pos.y,pot * weight);
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -205,9 +245,12 @@ var FIELD = (function () {
         this.mass = mass;
         this.pos = position;
         this.vel = velocity;
-        this.radius = 2;
+        this.size = 2;
         this.energy = 0.5 * this.vel.lengthSq() + space.closestPotential(this.pos) * space.gravity;
+        
         this.usesFuel = false;
+        this.endsLevel = false;
+        this.losesGameOnExplosion = true;
     }
 
     function Fuel(particles,position,boost) {
@@ -220,6 +263,13 @@ var FIELD = (function () {
     function End(position,size) {
         this.pos = position;
         this.size = size;
+    }
+
+    function Explosive(position,type,size,range) {
+        this.pos = position;
+        this.size = size;
+        this.explodesWhite = type; // false for black, true for white
+        this.range = range || 50;
     }
 
     Particle.prototype.timestep = Ship.prototype.timestep;
