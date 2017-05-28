@@ -114,11 +114,10 @@ var FIELD = (function () {
         for (var e = 0; e < this.effects.length; e++){
             var effect = this.effects[e];
             effect.update(updateTime,this);
+                this.hasPotentialUpdated = true;
             if(effect.isFinished) {
                 this.effects.splice(e,1);
                 e--;
-            } else {
-                this.hasPotentialUpdated = true;
             }
         }
     }
@@ -357,7 +356,7 @@ var FIELD = (function () {
             }
         }
         //space.addEffect(this.pos,"bomb", this.explodesWhite ? 1 : -1);
-        //space.addEffect(this.pos,"wave", this.explodesWhite ? 1 : -1);
+        space.addEffect(this.pos,"wave", this.explodesWhite ? 1 : -1);
 
         space.hasPotentialUpdated = true;
         explodeSound.play();
@@ -368,7 +367,7 @@ var FIELD = (function () {
         this.effectTypes = {
                 //type : [duration,typeEnumerated]
                 bomb : [1000,0],
-                wave : [5000,1]
+                wave : [2000,1]
             }
         this.type = type;
         this.remaining = this.effectTypes[type][0] || 0;
@@ -407,8 +406,8 @@ var FIELD = (function () {
         var waveSpeed = 0.1,
             dist = R2.pointDistance(pos,this.pos),
             wavePeak = waveSpeed * this.elapsed,
-            waveWidth = (waveSpeed * 0.01) * this.elapsed;
-        return Math.abs(dist - wavePeak) > waveWidth ? 0 : Math.cos( (dist - wavePeak) / waveWidth);
+            waveWidth = (waveSpeed * 0.1) * this.elapsed;
+        return Math.abs(dist - wavePeak) > waveWidth ? 0 : Math.cos( (dist - wavePeak) / waveWidth) * (this.remaining / this.effectTypes[this.type][0]);
     }
 
     function Planet(position, scale, gravityExponent){
