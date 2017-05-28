@@ -49,7 +49,7 @@ var GREY = (function () {
     }
 
     function makeBomb(data, pos, size) {
-        var isWhite = data.type == "white",
+        var isWhite = data.bombType == "white",
             range = parseFloat(data.range);
         if (isNaN(range)) {
             range = null;
