@@ -96,7 +96,9 @@ var FIELD = (function () {
     }
 
     Space.prototype.setPotential = function (x, y, value) {
-        this.potentials[this.scalarIndex(x, y)] = value;
+        if(x >= 0 && x < this.width && y >= 0 && y <this.height) {
+            this.potentials[this.scalarIndex(x, y)] = value;
+        }
     }
 
     Space.prototype.update = function(updateTime, stepCount, isShooting, shotAngle) {
@@ -106,22 +108,25 @@ var FIELD = (function () {
             this.ship.shoot(shotAngle, this);
         }
 
-        this.ship.timestep(this,physicsTime);
-        for (var i = 0; i < this.particles.length; ++i) {
-            this.particles[i].timestep(this, physicsTime);
-        }
-
         for (var e = 0; e < this.effects.length; e++){
             var effect = this.effects[e];
             effect.update(updateTime,this);
-                this.hasPotentialUpdated = true;
+            this.hasPotentialUpdated = true;
             if(effect.isFinished) {
                 this.effects.splice(e,1);
                 e--;
             }
         }
-    }
 
+        this.ship.timestep(this,physicsTime);
+        for (var i = 0; i < this.particles.length; ++i) {
+            this.particles[i].timestep(this, physicsTime);
+        }
+
+        var result = this.hasPotentialUpdated;
+        this.hasPotentialUpdated = false;
+        return result;
+    }
 
     Space.prototype.addExit = function (position, size) {
         this.exits.push(new Exit(position, size));
@@ -234,8 +239,9 @@ var FIELD = (function () {
         this.calculateMass();
         this.calcEnergy(space);
 
-        var velocity = new R2.V(Math.cos(theta), Math.sin(theta));
-        velocity.scale(this.vel.length() - this.particleVelocity);
+        var velocity = new R2.V(-Math.cos(theta), -Math.sin(theta));
+        velocity.scale(this.particleVelocity);
+        velocity.add(this.vel);
         var newParticle = new Particle(this.particleMass, this.pos.clone(), velocity, space);
         newParticle.calcEnergy(space);
         space.particles.push(newParticle);
@@ -284,9 +290,6 @@ var FIELD = (function () {
 
         space.checkBombCollisions(this);
 
-        
-        
-
         var finalPotential = this.mass * space.closestPotential(this.pos) * space.gravity;
         if(finalPotential > this.energy) {
             this.vel.scale(0);
@@ -296,10 +299,6 @@ var FIELD = (function () {
                 this.vel.scale(Math.sqrt(2 * (this.energy - finalPotential) / this.mass));
             }
         }
-
-        var result = this.hasPotentialUpdated;
-        this.hasPotentialUpdated = false;
-        return result;
         //console.log("energy = ",0.5 * this.vel.lengthSq() + space.closestPotential(new R2.V(this.pos.y,this.pos.x)) * space.gravity);
     }
 

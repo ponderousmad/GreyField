@@ -49,7 +49,7 @@ var GREY = (function () {
     }
 
     function makeBomb(data, pos, size) {
-        var isWhite = data.type == "white",
+        var isWhite = data.bombType == "white",
             range = parseFloat(data.range);
         if (isNaN(range)) {
             range = null;
@@ -225,6 +225,7 @@ var GREY = (function () {
             deletePart = document.getElementById("buttonDeletePart"),
             self = this;
 
+        this.cursorDisplay = document.getElementById("cursor");
         this.levelSelect = document.getElementById("selectLevel");
         if (this.levelSelect) {
             this.levelSelect.addEventListener("change", function (e) {
@@ -490,19 +491,28 @@ var GREY = (function () {
         elapsed = 20;
         if (this.space) {
             var fire = false,
-                fireAngle = 0;
+                fireAngle = 0,
+                xOffset = centerOffset(width, this.space.width),
+                yOffset = centerOffset(height, this.space.height);
 
             if (pointer.primary && pointer.primary.isStart) {
                 fire = true;
-                var levelX = pointer.primary.x - centerOffset(width, this.space.width),
-                    levelY = pointer.primary.y - centerOffset(height, this.space.height),
+                var levelX = pointer.primary.x - xOffset,
+                    levelY = pointer.primary.y - yOffset,
                     shipPos = this.space.ship.pos,
                     dx = levelX - shipPos.x,
                     dy = levelY - shipPos.y;
                 fireAngle = Math.atan2(dy, dx) + Math.PI;
             }
+            if (this.cursorDisplay) {
+                var loc = pointer.mouse.location;
+                this.cursorDisplay.innerHTML = (loc[0] - xOffset) + ", " + (loc[1] - yOffset);
+            }
 
-            this.space.update(elapsed, 1, fire, fireAngle);
+            if (this.space.update(elapsed, 1, fire, fireAngle) ) {
+                drawField(this.space, this.potentialCanvas, this.potentialContext, potToPixel, true);
+                console.log("Updated Gradient");
+            }
 
             if(this.space.isLevelCompleted) {
                 this.levelIndex += 1;
@@ -510,68 +520,63 @@ var GREY = (function () {
                 if (this.levelSelect) {
                     this.levelSelect.value = this.levelIndex;
                 }
-            } else if (this.space.isLevelLost) {
+            } else if (this.space.isLevelLost || keyboard.wasAsciiPressed("R")) {
                 this.loadLevel(this.levelIndex);
-            }
-
-            if (this.space.hasPotentialUpdated) {
-                this.space.hasPotentialUpdated = false;
-                drawField(this.space, this.potentialCanvas, this.potentialContext, potToPixel, true);
-                console.log("Updated Gradient");
             }
         }
     };
 
     SpaceView.prototype.draw = function (context, width, height) {
-        context.clearRect(0, 0, width, height);
-        if (this.space) {
-            context.save();
-            context.translate(
-                centerOffset(width, this.space.width),
-                centerOffset(height, this.space.height)
-            );
-            if (this.level) {
-                BLIT.draw(context, this.potentialCanvas, -this.space.border, -this.space.border, BLIT.ALIGN.TopLeft);
-            }
-
-            if (this.xGrad) {
-                BLIT.draw(context, this.xGrad, this.space.width, 0, BLIT.ALIGN.TopLeft);
-            }
-            if (this.yGrad) {
-                BLIT.draw(context, this.yGrad, 0, this.space.height, BLIT.ALIGN.TopLeft);
-            }
-
-            var shipPos = this.space.ship.pos,
-                shipSize = this.space.ship.size * 2;
-            BLIT.draw(context, this.shipImage, shipPos.x, shipPos.y, BLIT.ALIGN.Center, shipSize, shipSize);
-
-            for (var p = 0; p < this.space.particles.length; ++p) {
-                var particle = this.space.particles[p],
-                    particleSize = particle.size * 2;
-                BLIT.draw(context, this.particleImage, particle.pos.x, particle.pos.y, BLIT.ALIGN.Center, particleSize, particleSize);
-            }
-
-            for (var b = 0; b < this.space.bombs.length; ++b) {
-                var bomb = this.space.bombs[b],
-                    bombImage = bomb.explodesWhite ? this.whiteBombImage : this.blackBombImage;
-                BLIT.draw(context, bombImage, bomb.pos.x, bomb.pos.y, BLIT.ALIGN.Center);
-            }
-
-            for (var f = 0; f < this.space.fuels.length; ++f) {
-                var fuel = this.space.fuels[f],
-                    fuelSize = fuel.size * 2;
-                BLIT.draw(context, this.fuelImage, fuel.pos.x, fuel.pos.y, BLIT.ALIGN.Center, fuelSize, fuelSize);
-            }
-
-            for (var e = 0; e < this.space.exits.length; ++e) {
-                var exit = this.space.exits[e];
-                BLIT.draw(context, this.exitImage, exit.pos.x, exit.pos.y, BLIT.ALIGN.Center, exit.size*2, exit.size*2);
-            }
-            context.restore();
-            context.fillStyle = "black";
-            context.font = '48px serif';
-            context.fillText(". ".repeat(this.space.ship.particleCount), 10, 20);
+        if (!this.space) {
+            return;
         }
+        context.clearRect(0, 0, width, height);
+        context.save();
+        context.translate(
+            centerOffset(width, this.space.width),
+            centerOffset(height, this.space.height)
+        );
+        if (this.level) {
+            BLIT.draw(context, this.potentialCanvas, -this.space.border, -this.space.border, BLIT.ALIGN.TopLeft);
+        }
+
+        if (this.xGrad) {
+            BLIT.draw(context, this.xGrad, this.space.width, 0, BLIT.ALIGN.TopLeft);
+        }
+        if (this.yGrad) {
+            BLIT.draw(context, this.yGrad, 0, this.space.height, BLIT.ALIGN.TopLeft);
+        }
+
+        var shipPos = this.space.ship.pos,
+            shipSize = this.space.ship.size * 2;
+        BLIT.draw(context, this.shipImage, shipPos.x, shipPos.y, BLIT.ALIGN.Center, shipSize, shipSize);
+
+        for (var p = 0; p < this.space.particles.length; ++p) {
+            var particle = this.space.particles[p],
+                particleSize = particle.size * 2;
+            BLIT.draw(context, this.particleImage, particle.pos.x, particle.pos.y, BLIT.ALIGN.Center, particleSize, particleSize);
+        }
+
+        for (var b = 0; b < this.space.bombs.length; ++b) {
+            var bomb = this.space.bombs[b],
+                bombImage = bomb.explodesWhite ? this.whiteBombImage : this.blackBombImage;
+            BLIT.draw(context, bombImage, bomb.pos.x, bomb.pos.y, BLIT.ALIGN.Center);
+        }
+
+        for (var f = 0; f < this.space.fuels.length; ++f) {
+            var fuel = this.space.fuels[f],
+                fuelSize = fuel.size * 2;
+            BLIT.draw(context, this.fuelImage, fuel.pos.x, fuel.pos.y, BLIT.ALIGN.Center, fuelSize, fuelSize);
+        }
+
+        for (var e = 0; e < this.space.exits.length; ++e) {
+            var exit = this.space.exits[e];
+            BLIT.draw(context, this.exitImage, exit.pos.x, exit.pos.y, BLIT.ALIGN.Center, exit.size*2, exit.size*2);
+        }
+        context.restore();
+        context.fillStyle = "black";
+        context.font = '48px serif';
+        context.fillText(". ".repeat(this.space.ship.particleCount), 10, 20);
     };
 
     function start() {

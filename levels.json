@@ -1,7 +1,7 @@
 {
     "levels": [
         {
-            "resource": "simple.png",
+            "resource": "simple_edited.png",
             "shipX": 150,
             "shipY": 200,
             "particleCount": 2,
@@ -14,74 +14,148 @@
             ]
         },
         {
-            "resource": "path.png",
+            "resource": "path_edited.png",
             "shipX": 115,
             "shipY": 195,
             "particleMass": 4,
             "particleVelocity": 0.2,
             "parts": [
                 {
-                    "exponent": 1,
-                    "type": "planet",
-                    "x": 390,
-                    "y": 100,
-                    "size": 20
+                    "type": "exit",
+                    "x": 480,
+                    "y": 300
                 }
             ]
-        },
-        {
-            "resource": "normalspace.png",
-            "shipX": 50,
-            "shipY": 50
         },
         {
             "resource": "grey_square.png",
             "shipX": 80,
             "shipY": 50,
-            "particleVelocity": 0.5
-        },
-        {
-            "resource": "wells.png",
-            "shipX": 100,
-            "shipY": 100
+            "particleVelocity": 0.5,
+            "parts": [
+                {
+                    "type": "exit",
+                    "x": 320,
+                    "y": 200
+                }
+            ]
         },
         {
             "resource": "ring.png",
             "shipX": 320,
             "shipY": 200,
+            "gravity": 0.1,
             "parts": [
                 {
                     "bombType": "black",
-                    "range": 50,
                     "type": "bomb",
                     "x": 320,
                     "y": 290,
-                    "size": 10
+                    "size": 5
+                },
+                {
+                    "type": "exit",
+                    "x": 107,
+                    "y": 107
+                },
+                {
+                    "type": "exit",
+                    "x": 107,
+                    "y": 302
+                },
+                {
+                    "type": "exit",
+                    "x": 525,
+                    "y": 107
+                },
+                {
+                    "type": "exit",
+                    "x": 525,
+                    "y": 107
+                },
+                {
+                    "type": "exit",
+                    "x": 525,
+                    "y": 290
                 }
             ]
         },
         {
             "resource": "cloud.png",
             "shipX": 100,
-            "shipY": 100
+            "shipY": 100,
+            "gravity": 0.1,
+            "particleCount": 3,
+            "particleVelocity": 0.4,
+            "parts": [
+                {
+                    "bombType": "black",
+                    "type": "bomb",
+                    "x": 290,
+                    "y": 200,
+                    "size": 5
+                },
+                {
+                    "type": "exit",
+                    "x": 360,
+                    "y": 200
+                }
+            ]
         },
         {
             "resource": "spiral.png",
             "shipX": 100,
             "shipY": 100,
-            "gravity": 0.1,
+            "gravity": 0.05,
             "parts": [
                 {
                     "exponent": 1,
                     "type": "planet",
                     "x": 310,
                     "y": 190,
-                    "size": 20
+                    "size": 25
                 },
                 {
                     "type": "exit",
                     "x": 310,
                     "y": 190
+                }
+            ]
+        },
+        {
+            "resource": "white.png",
+            "shipX": 320,
+            "shipY": 200,
+            "particleVelocity": 0.5,
+            "parts": [
+                {
+                    "type": "exit",
+                    "x": 420,
+                    "y": 320
+                },
+                {
+                    "type": "planet",
+                    "x": 220,
+                    "y": 200,
+                    "size": 10
+                },
+                {
+                    "type": "planet",
+                    "x": 420,
+                    "y": 200,
+                    "size": 10
+                },
+                {
+                    "type": "planet",
+                    "x": 320,
+                    "y": 100,
+                    "size": 10
+                },
+                {
+                    "type": "planet",
+                    "x": 320,
+                    "y": 300,
+                    "size": 10
                 }
             ]
         },
@@ -110,9 +184,86 @@
             ]
         },
         {
+            "resource": "wells.png",
+            "shipX": 100,
+            "shipY": 100,
+            "particleVelocity": 0.247,
+            "parts": [
+                {
+                    "type": "exit",
+                    "x": 570,
+                    "y": 140
+                },
+                {
+                    "bombType": "black",
+                    "type": "bomb",
+                    "x": 300,
+                    "y": 200,
+                    "size": 5
+                },
+                {
+                    "particles": 6,
+                    "type": "fuel",
+                    "x": 260,
+                    "y": 360,
+                    "size": 5
+                },
+                {
+                    "bombType": "white",
+                    "type": "bomb",
+                    "x": 20,
+                    "y": 20,
+                    "size": 5
+                },
+                {
+                    "particles": 6,
+                    "type": "fuel",
+                    "x": 415,
+                    "y": 130,
+                    "size": 5
+                },
+                {
+                    "particles": 6,
+                    "type": "fuel",
+                    "x": 488,
+                    "y": 283,
+                    "size": 5
+                },
+                {
+                    "particles": 6,
+                    "type": "fuel",
+                    "x": 365,
+                    "y": 252,
+                    "size": 5
+                },
+                {
+                    "particles": 6,
+                    "type": "fuel",
+                    "x": 94,
+                    "y": 334,
+                    "size": 5
+                }
+            ]
+        },
+        {
             "resource": "final_level.png",
             "shipX": 100,
             "shipY": 100
+        },
+        {
+            "resource": "normalspace.png",
+            "shipX": 50,
+            "shipY": 50
+        },
+        {
+            "resource": "spiralEdged.png",
+            "shipX": 320,
+            "shipY": 200
+        },
+        {
+            "resource": "white.png",
+            "shipX": 320,
+            "shipY": 200
         }
     ]
 }
