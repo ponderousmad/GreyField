@@ -15,9 +15,11 @@ var FIELD = (function () {
         this.gravity = gravity || 0.005;
         this.fuels = [];
         this.ends = [];
+        this.explosives = [];
         this.ship = null;
 
         this.isLevelCompleted = false;
+        this.isLevelLost = false;
     }
 
     Space.prototype.setupShip = function (shipPosition, shipMass, particleMass, particleCount, particleVelocity) {
@@ -94,11 +96,10 @@ var FIELD = (function () {
     }
 
     Space.prototype.computeGrads = function() {
+        
         for (var x = 0; x < this.width; x++) {
             for (var y = 0; y < this.height; y++) {
-                var dx = this.potential(x-1,y)-this.potential(x+1,y),
-                    dy = this.potential(x,y-1)-this.potential(x,y+1);
-                this.setGradient(x,y,this.closestPotential(new R2.V(x,y)));
+                this.setGradient(x,y,this.closestGradient(new R2.V(x,y)));
             }
         }
 
@@ -129,6 +130,8 @@ var FIELD = (function () {
         this.vel = new R2.V(0, 0);
         this.radius = 5;
         this.usesFuel = true;
+        this.endsLevel = true;
+        this.losesGameOnExplosion = true;
 
         this.calculateMass();
         this.calcEnergy(space);
@@ -190,7 +193,7 @@ var FIELD = (function () {
         }
 
         // COLLISION CODE BLOCK: 
-        for(var i = 0; i < space.fuels.length; i++){
+        for(var i = 0; i < space.fuels.length && this.usesFuel; i++){
             var fuel = space.fuels[i],
                 distance = R2.pointDistance(this.pos, fuel.pos);
             if(distance < this.size + fuel.size) {
@@ -202,13 +205,29 @@ var FIELD = (function () {
             }
         }
 
-        for(var i = 0; i < space.ends.length; i++){
+        for(var i = 0; i < space.ends.length && this.endsLevel; i++){
             var end = space.ends[i],
                 distance = R2.pointDistance(this.pos, end.pos);
             if(distance < this.size + end.size) {
                 space.ends.splice(i,1);
                 space.isLevelCompleted = true;
                 this.energy = -1;
+            }
+        }
+        
+        for(var i = 0; i < space.explosives.length; i++){
+            var explosive = space.explosives[i],
+                distance = R2.pointDistance(this.pos, enexplosived.pos);
+            if(distance < this.size + explosive.size) {
+                space.explosives.splice(i,1);
+                if(this.losesGameOnExplosion) {
+                    this.energy = -1;
+                    this.pos = R2.V(-100,-100);
+                    space.isLevelLost = true;
+                } else {
+                    space.particles.splice(space.particles.indexOf(this),1);
+                }
+                //explode the thing
             }
         }
 
@@ -230,7 +249,10 @@ var FIELD = (function () {
         this.vel = velocity;
         this.radius = 2;
         this.energy = 0.5 * this.vel.lengthSq() + space.closestPotential(this.pos) * space.gravity;
+        
         this.usesFuel = false;
+        this.endsLevel = false;
+        this.losesGameOnExplosion = true;
     }
 
     function Fuel(particles,position,boost) {
@@ -243,6 +265,13 @@ var FIELD = (function () {
     function End(position,size) {
         this.pos = position;
         this.size = size;
+    }
+
+    function Explosive(position,type,size,range) {
+        this.pos = position;
+        this.size = size;
+        this.type = type; // false for black, true for white
+        this.range = 50;
     }
 
     Particle.prototype.timestep = Ship.prototype.timestep;
