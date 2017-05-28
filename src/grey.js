@@ -262,7 +262,6 @@ var GREY = (function () {
         this.level.setupShip(space);
         this.potentialCanvas.width = image.width + 2 * space.border;
         this.potentialCanvas.height = image.height + 2 * space.border;
-        this.potentialContext.drawImage(image, 0, 0);
         this.xGrad = null;
         this.yGrad = null;
 
@@ -294,17 +293,17 @@ var GREY = (function () {
 
             this.space.update(elapsed, 1, fire, fireAngle);
 
-            if (this.space.hasPotentialUpdated) {
-                this.space.hasPotentialUpdated = false;
-                drawField(this.space, this.potentialCanvas, this.potentialContext, potToPixel, true);
-                console.log("Updated Gradient");
-            }
-
             if(this.space.isLevelCompleted) {
                 this.levelIndex += 1;
                 this.loadLevel(this.levelIndex);
             } else if (this.space.isLevelLost) {
                 this.loadLevel(this.levelIndex);
+            }
+
+            if (this.space.hasPotentialUpdated) {
+                this.space.hasPotentialUpdated = false;
+                drawField(this.space, this.potentialCanvas, this.potentialContext, potToPixel, true);
+                console.log("Updated Gradient");
             }
         }
     };
