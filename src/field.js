@@ -18,6 +18,7 @@ var FIELD = (function () {
         this.exits = [];
         this.bombs = [];
         this.planets = [];
+        this.effects = [];
         this.ship = null;
         this.border = 100;
 
@@ -47,7 +48,7 @@ var FIELD = (function () {
     }
 
     Space.prototype.potential = function (x, y) {
-        pot = 0;
+        var pot = 0;
         if(x >= 0 && x < this.width && y >= 0 && y < this.height) {
             pot += this.potentials[this.scalarIndex(x, y)];
         } else {
@@ -56,10 +57,14 @@ var FIELD = (function () {
             pot += (1 / this.border) * Math.sqrt(x_off*x_off + y_off*y_off) + 1;
         }
         for(var i = 0; i < this.planets.length; i++) {
-            var planet = this.planets[i],
-                dPlan = R2.pointDistance(planet.pos,new R2.V(x,y));
-            pot += R2.clamp(1 - (1.0 / Math.pow(dCent / planet.scale,planet.exponent)),-3,3);
+            var planet = this.planets[i];
+            pot += planet.potential(new R2.V(x,y));
         }
+
+        for(var e = 0; e < this.effects.length; e++){
+            pot += this.effects[e].potential(new R2.V(x,y));
+        }
+        return pot;
     }
 
     Space.prototype.closestPotential = function (pos) {
@@ -105,7 +110,19 @@ var FIELD = (function () {
         for (var i = 0; i < this.particles.length; ++i) {
             this.particles[i].timestep(this, physicsTime);
         }
+
+        for (var e = 0; e < this.effects.length; e++){
+            var effect = this.effects[e];
+            effect.update(updateTime,this);
+            if(effect.isFinished) {
+                this.effects.splice(e,1);
+                e--;
+            } else {
+                this.hasPotentialUpdated = true;
+            }
+        }
     }
+
 
     Space.prototype.addExit = function (position, size) {
         this.exits.push(new Exit(position, size));
@@ -126,11 +143,17 @@ var FIELD = (function () {
         this.hasPotentialUpdated = true;
     };
 
+    Space.prototype.addEffect = function(position, type, scale) {
+        this.effects.push(new Effect(position, type, scale));
+        this.hasPotentialUpdated = true;
+    }
+
     Space.prototype.checkFuelCollisions = function (ship) {
         for(var i = 0; i < this.fuels.length; i++){
             var fuel = this.fuels[i];
             if (hasCollided(ship,fuel)) {
                 this.fuels.splice(i,1);
+                i--;
                 ship.particleCount += fuel.particles;
                 ship.particleVelocity += fuel.boost;
                 ship.calculateMass();
@@ -144,6 +167,7 @@ var FIELD = (function () {
             var exit = this.exits[i];
             if(hasCollided(ship,exit)) {
                 this.exits.splice(i,1);
+                i--;
                 this.isLevelCompleted = true;
                 ship.energy = -1;
                 ship.particleCount = 0;
@@ -156,6 +180,7 @@ var FIELD = (function () {
             var bomb = this.bombs[i];
             if(hasCollided(particle,bomb)) {
                 this.bombs.splice(i,1);
+                i--;
                 if(particle.losesGameOnExplosion) {
                     particle.energy = -1;
                     particle.pos = new R2.V(-100,-100);
@@ -212,11 +237,13 @@ var FIELD = (function () {
 
         var velocity = new R2.V(Math.cos(theta), Math.sin(theta));
         velocity.scale(this.vel.length() - this.particleVelocity);
-        space.particles.push(new Particle(this.particleMass, this.pos.clone(), velocity, space));
+        var newParticle = new Particle(this.particleMass, this.pos.clone(), velocity, space);
+        newParticle.calcEnergy(space);
+        space.particles.push(newParticle);
+
     }
 
     Ship.prototype.timestep = function(space, time) {
-        //var energy = 0.5 * this.vel.lengthSq() + space.closestPotential(new R2.V(this.pos.y,this.pos.x)) * space.gravity;
         if(space.hasPotentialUpdated) {
             this.calcEnergy(space);
         }
@@ -288,14 +315,15 @@ var FIELD = (function () {
         this.vel = velocity;
         this.size = 2;
         this.energy;
-        this.calcEnergy(space);
 
         this.usesFuel = false;
         this.endsLevel = false;
         this.losesGameOnExplosion = false;
     }
 
-    Particle.prototype.calcEnergy = Ship.calcEnergy;
+    Particle.prototype.calcEnergy = Ship.prototype.calcEnergy;
+
+    Particle.prototype.timestep = Ship.prototype.timestep;
 
     function Fuel(position, particles, boost, size) {
         this.pos = position;
@@ -322,27 +350,78 @@ var FIELD = (function () {
                 var pos = new R2.V(x,y),
                     distance = R2.pointDistance(pos,this.pos);
                 if(distance < this.range) {
-                    var weight = 1 - (this.range - distance) / this.range, // 1 far away, 0 close
+                    var weight = (this.range - distance) / this.range, // 0 far away, 1 close
                         pot = space.potential(pos.x,pos.y);
-                    if(this.explodesWhite) {
-                        space.setPotential(pos.x,pos.y, 1 - ((1-pot) * weight) )
-                    } else {
-                        space.setPotential(pos.x,pos.y,pot * weight);
-                    }
+                    space.setPotential(pos.x,pos.y, pot + weight * (this.explodesWhite ? 1 : -1) );
                 }
             }
         }
+        //space.addEffect(this.pos,"bomb", this.explodesWhite ? 1 : -1);
+        //space.addEffect(this.pos,"wave", this.explodesWhite ? 1 : -1);
+
         space.hasPotentialUpdated = true;
         explodeSound.play();
+    }
+
+    function Effect(position,type, scale) {
+        this.pos = position,
+        this.effectTypes = {
+                //type : [duration,typeEnumerated]
+                bomb : [1000,0],
+                wave : [5000,1]
+            }
+        this.type = type;
+        this.remaining = this.effectTypes[type][0] || 0;
+        this.elapsed = 0;
+        this.isFinished = false;
+        this.scale = scale || 1;
+    }
+
+    Effect.prototype.update = function(deltaTime,space) {
+        this.remaining -= deltaTime;
+        this.elapsed += deltaTime;
+        if(this.remaining < 0) {
+            this.isFinished = true;
+            this.potential = function(pos) {
+                return 0;
+            }
+        } else {
+            space.hasPotentialUpdated = true;
+        }
+    }
+
+    Effect.prototype.potential = function(pos) {
+        if(this.effectTypes[this.type][1] == 0) {
+            return this.scale * this.bombPotential(pos)
+        }
+        else if (this.effectTypes[this.type][1] == 1) {
+            return this.scale * this.wavePotential(pos);
+        }
+    }
+
+    Effect.prototype.bombPotential = function(pos) {
+        return 0;
+    }
+
+    Effect.prototype.wavePotential = function(pos) {
+        var waveSpeed = 0.1,
+            dist = R2.pointDistance(pos,this.pos),
+            wavePeak = waveSpeed * this.elapsed,
+            waveWidth = (waveSpeed * 0.01) * this.elapsed;
+        return Math.abs(dist - wavePeak) > waveWidth ? 0 : Math.cos( (dist - wavePeak) / waveWidth);
     }
 
     function Planet(position, scale, gravityExponent){
         this.pos = position;
         this.scale = scale;
-        this.exponent = gravityExponent;
+        this.exponent = gravityExponent; // 1 is a normal planet, because this exponent affects the potential
     }
 
-    Particle.prototype.timestep = Ship.prototype.timestep;
+    Planet.prototype.potential = function(pos) {
+        var dPlan = R2.pointDistance(planet.pos,pos);
+        return R2.clamp(1 - (1.0 / Math.pow(dCent / planet.scale,planet.exponent)),-3,3);
+    }
+
 
     return {
         Space : Space
