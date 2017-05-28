@@ -222,6 +222,7 @@
             "resource": "white.png",
             "shipX": 320,
             "shipY": 200,
+            "particleVelocity": 0.5,
             "parts": [
                 {
                     "type": "exit",
