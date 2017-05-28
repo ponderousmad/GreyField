@@ -44,13 +44,14 @@
             "resource": "ring.png",
             "shipX": 320,
             "shipY": 200,
+            "gravity": 0.1,
             "parts": [
                 {
                     "bombType": "black",
                     "type": "bomb",
                     "x": 320,
                     "y": 290,
-                    "size": null
+                    "size": 5
                 },
                 {
                     "type": "exit",
@@ -83,6 +84,7 @@
             "resource": "cloud.png",
             "shipX": 100,
             "shipY": 100,
+            "gravity": 0.1,
             "particleCount": 3,
             "particleVelocity": 0.4,
             "parts": [
@@ -91,7 +93,7 @@
                     "type": "bomb",
                     "x": 290,
                     "y": 200,
-                    "size": null
+                    "size": 5
                 },
                 {
                     "type": "exit",
@@ -104,7 +106,7 @@
             "resource": "spiral.png",
             "shipX": 100,
             "shipY": 100,
-            "gravity": 0.1,
+            "gravity": 0.05,
             "parts": [
                 {
                     "exponent": 1,
@@ -160,49 +162,49 @@
                     "type": "bomb",
                     "x": 300,
                     "y": 200,
-                    "size": null
+                    "size": 5
                 },
                 {
                     "particles": 6,
                     "type": "fuel",
                     "x": 260,
                     "y": 360,
-                    "size": null
+                    "size": 5
                 },
                 {
                     "bombType": "white",
                     "type": "bomb",
                     "x": 20,
                     "y": 20,
-                    "size": null
+                    "size": 5
                 },
                 {
                     "particles": 6,
                     "type": "fuel",
                     "x": 415,
                     "y": 130,
-                    "size": null
+                    "size": 5
                 },
                 {
                     "particles": 6,
                     "type": "fuel",
                     "x": 488,
                     "y": 283,
-                    "size": null
+                    "size": 5
                 },
                 {
                     "particles": 6,
                     "type": "fuel",
                     "x": 365,
                     "y": 252,
-                    "size": null
+                    "size": 5
                 },
                 {
                     "particles": 6,
                     "type": "fuel",
                     "x": 94,
                     "y": 334,
-                    "size": null
+                    "size": 5
                 }
             ]
         },
