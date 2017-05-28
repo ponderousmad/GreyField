@@ -195,8 +195,10 @@ var GREY = (function () {
 
         this.whiteBombImage = this.batch.load("white_bomb.png");
         this.blackBombImage = this.batch.load("black_bomb.png");
-        this.fuelImage = this.batch.load("fuel.png");
-        this.exitImage = this.batch.load("exit.png");
+        this.fuelImage = this.batch.load("fuel_high_res.png");
+        this.exitImage = this.batch.load("goal.png");
+        this.shipImage = this.batch.load("ship_high_res.png");
+        this.particleImage = this.batch.load("pellet_high_res.png");
 
         IO.downloadJSON("levels.json", function (data) {
             self.loadLevelData(data);
@@ -519,18 +521,14 @@ var GREY = (function () {
                 BLIT.draw(context, this.yGrad, 0, this.space.height, BLIT.ALIGN.TopLeft);
             }
 
-            var shipPos = this.space.ship.pos;
-            context.fillStyle = "green";
-            context.beginPath();
-            context.arc(shipPos.x, shipPos.y, 5, 0, 2*Math.PI);
-            context.fill();
+            var shipPos = this.space.ship.pos,
+                shipSize = this.space.ship.size * 2;
+            BLIT.draw(context, this.shipImage, shipPos.x, shipPos.y, BLIT.ALIGN.Center, shipSize, shipSize);
 
-            context.fillStyle = "blue";
             for (var p = 0; p < this.space.particles.length; ++p) {
-                var particle = this.space.particles[p];
-                context.beginPath();
-                context.arc(particle.pos.x, particle.pos.y, 2, 0, 2*Math.PI);
-                context.fill();
+                var particle = this.space.particles[p],
+                    particleSize = particle.size * 2;
+                BLIT.draw(context, this.particleImage, particle.pos.x, particle.pos.y, BLIT.ALIGN.Center, particleSize, particleSize);
             }
 
             for (var b = 0; b < this.space.bombs.length; ++b) {
@@ -540,13 +538,14 @@ var GREY = (function () {
             }
 
             for (var f = 0; f < this.space.fuels.length; ++f) {
-                var fuel = this.space.fuels[f];
-                BLIT.draw(context, this.fuelImage, fuel.pos.x, fuel.pos.y, BLIT.ALIGN.Center);
+                var fuel = this.space.fuels[f],
+                    fuelSize = fuel.size * 2;
+                BLIT.draw(context, this.fuelImage, fuel.pos.x, fuel.pos.y, BLIT.ALIGN.Center, fuelSize, fuelSize);
             }
 
             for (var e = 0; e < this.space.exits.length; ++e) {
                 var exit = this.space.exits[e];
-                BLIT.draw(context, this.exitImage, exit.pos.x, exit.pos.y, BLIT.ALIGN.Center);
+                BLIT.draw(context, this.exitImage, exit.pos.x, exit.pos.y, BLIT.ALIGN.Center, exit.size*2, exit.size*2);
             }
         }
         context.restore();
