@@ -9,24 +9,31 @@ var GREY = (function () {
         return data;
     }
 
-    function makeExit(data, pos, size) {
+    function makePart(data, pos, save, build) {
         return {
+            type: data.type,
             pos: pos,
-            save: function () {
+            save: save,
+            build: build
+        };
+    }
+
+    function makeExit(data, pos, size) {
+        return makePart(data, pos,
+            function () {
                 return savePart({}, "exit", pos);
             },
-            build: function (space) {
+            function (space) {
                 space.addExit(pos, size);
             }
-        }
+        );
     }
 
     function makeFuel(data, pos, size) {
         var boost = data.boost,
             particles = parseInt(data.particles);
-        return {
-            pos: pos,
-            save: function () {
+        return makePart(data, pos,
+            function () {
                 var saveData = {
                     particles: particles
                 }
@@ -35,10 +42,10 @@ var GREY = (function () {
                 }
                 return savePart(saveData, "fuel", pos, size);
             },
-            build: function (space) {
+            function (space) {
                 space.addFuel(pos, particles, boost, size);
             }
-        }
+        );
     }
 
     function makeBomb(data, pos, size) {
@@ -47,9 +54,8 @@ var GREY = (function () {
         if (isNaN(range)) {
             range = null;
         }
-        return {
-            pos: pos,
-            save: function () {
+        return makePart(data, pos,
+            function () {
                 var saveData = {
                     type: type ? "white" : "black"
                 }
@@ -58,10 +64,10 @@ var GREY = (function () {
                 }
                 return savePart(saveData, "bomb", pos, size);
             },
-            build: function (space) {
+            function (space) {
                 space.addBomb(pos, type, size, range);
             }
-        }
+        );
     }
     
     function loadPart(data) {
@@ -281,16 +287,50 @@ var GREY = (function () {
             onLevelChanged();
         });
 
+        this.partEdit = document.getElementById("textPartData");
+        this.selectPartType = document.getElementById("selectPartType");
+        this.partSelect = document.getElementById("selectPart");
+        if (this.partSelect) {
+            this.partSelect.addEventListener("change", function (e) {
+                self.selectPart(parseInt(self.partSelect.value));
+            }, true);
+        }
+
         this.updateLevelEditors();
     };
 
-    SpaceView.prototype.updateLevelEditors = function() {
+    SpaceView.prototype.updateLevelEditors = function () {
         this.initGravity(this.space.gravity);
         this.initShipMass(this.space.ship.shipMass);
         this.initParticles(this.space.ship.particleCount);
         this.initParticleVel(this.space.ship.particleVelocity);
         this.initParticleMass(this.space.ship.particleMass);
-    }
+
+        if (this.partSelect) {
+            this.partSelect.innerHTML = "";
+            for (var p = 0; p < this.level.parts.length; ++p) {
+                var part = this.level.parts[p];
+                this.partSelect.appendChild(new Option(p + ": " + part.type, p));
+            }
+        }
+        if (this.level.parts.length > 0) {
+            this.selectPart(0);
+        }
+    };
+
+    SpaceView.prototype.selectPart = function (partIndex) {
+        this.selectedPart = partIndex;
+        var part = this.level.parts[partIndex];
+        if (!part) {
+            return;
+        }
+        if (this.selectPartType) {
+            this.selectPartType.value = part.type;
+        }
+        if (this.partEdit) {
+            this.partEdit.value = JSON.stringify(part.save(), null, 4);
+        }
+    };
 
     function canvasMatching(image) {
         var canvas = document.createElement('canvas');
