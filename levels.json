@@ -18,7 +18,16 @@
             "shipX": 115,
             "shipY": 195,
             "particleMass": 4,
-            "particleVelocity": 0.2
+            "particleVelocity": 0.2,
+            "parts": [
+                {
+                    "type": "planet",
+                    "x": 390,
+                    "y": 100,
+                    "exponent": 1,
+                    "size": 100
+                }
+            ]
         },
         {
             "resource": "normalspace.png",
