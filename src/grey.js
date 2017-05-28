@@ -433,6 +433,7 @@ var GREY = (function () {
 
     function potToPixel(space, x, y) {
         var c = Math.floor(space.potential(x - space.border, y - space.border) * 0.5 * IMPROC.BYTE_MAX);
+        c = Math.min(c, IMPROC.BYTE_MAX);
         return [c, c, c, IMPROC.BYTE_MAX];
     }
 
