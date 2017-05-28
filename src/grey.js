@@ -225,6 +225,7 @@ var GREY = (function () {
             deletePart = document.getElementById("buttonDeletePart"),
             self = this;
 
+        this.cursorDisplay = document.getElementById("cursor");
         this.levelSelect = document.getElementById("selectLevel");
         if (this.levelSelect) {
             this.levelSelect.addEventListener("change", function (e) {
@@ -490,16 +491,22 @@ var GREY = (function () {
         elapsed = 20;
         if (this.space) {
             var fire = false,
-                fireAngle = 0;
+                fireAngle = 0,
+                xOffset = centerOffset(width, this.space.width),
+                yOffset = centerOffset(height, this.space.height);
 
             if (pointer.primary && pointer.primary.isStart) {
                 fire = true;
-                var levelX = pointer.primary.x - centerOffset(width, this.space.width),
-                    levelY = pointer.primary.y - centerOffset(height, this.space.height),
+                var levelX = pointer.primary.x - xOffset,
+                    levelY = pointer.primary.y - yOffset,
                     shipPos = this.space.ship.pos,
                     dx = levelX - shipPos.x,
                     dy = levelY - shipPos.y;
                 fireAngle = Math.atan2(dy, dx) + Math.PI;
+            }
+            if (this.cursorDisplay) {
+                var loc = pointer.mouse.location;
+                this.cursorDisplay.innerHTML = (loc[0] - xOffset) + ", " + (loc[1] - yOffset);
             }
 
             this.space.update(elapsed, 1, fire, fireAngle);
