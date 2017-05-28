@@ -510,7 +510,7 @@ var GREY = (function () {
                 if (this.levelSelect) {
                     this.levelSelect.value = this.levelIndex;
                 }
-            } else if (this.space.isLevelLost) {
+            } else if (this.space.isLevelLost || keyboard.wasAsciiPressed("R")) {
                 this.loadLevel(this.levelIndex);
             }
 
