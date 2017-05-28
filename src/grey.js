@@ -222,6 +222,7 @@ var GREY = (function () {
             editArea = document.getElementById("textData"),
             createPart = document.getElementById("buttonCreatePart"),
             updatePart = document.getElementById("buttonUpdatePart"),
+            deletePart = document.getElementById("buttonDeletePart"),
             self = this;
 
         this.levelSelect = document.getElementById("selectLevel");
@@ -362,6 +363,15 @@ var GREY = (function () {
                     onLevelChanged(true);
                     self.partSelect.value = selected;
                     self.selectPart(selected);
+                }
+            }, true);
+        }
+
+        if (deletePart) {
+            deletePart.addEventListener("click", function(e) {
+                if (self.selectedPart !== null) {
+                    self.level.parts.splice(self.selectedPart, 1);
+                    onLevelChanged(true);
                 }
             }, true);
         }
