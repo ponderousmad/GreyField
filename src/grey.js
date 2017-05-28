@@ -301,6 +301,14 @@ var GREY = (function () {
             self.level.shipMass = value;
             onLevelChanged();
         });
+        this.initShipX = setupSlider("ShipX", function (value) {
+            self.level.shipPosition.x = value;
+            onLevelChanged();
+        });
+        this.initShipY = setupSlider("ShipY", function (value) {
+            self.level.shipPosition.y = value;
+            onLevelChanged();
+        });
         this.initParticles = setupSlider("Particles", function (value) {
             self.level.particleCount = Math.round(value);
             onLevelChanged();
@@ -364,6 +372,8 @@ var GREY = (function () {
     SpaceView.prototype.updateLevelEditors = function () {
         this.initGravity(this.space.gravity);
         this.initShipMass(this.space.ship.shipMass);
+        this.initShipX(this.space.ship.pos.x);
+        this.initShipY(this.space.ship.pos.y);
         this.initParticles(this.space.ship.particleCount);
         this.initParticleVel(this.space.ship.particleVelocity);
         this.initParticleMass(this.space.ship.particleMass);
