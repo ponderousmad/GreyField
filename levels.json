@@ -4,7 +4,14 @@
             "resource": "simple.png",
             "shipX": 150,
             "shipY": 200,
-            "particleCount": 2
+            "particleCount": 2,
+            "parts": [
+                {
+                    "type": "exit",
+                    "x": 590,
+                    "y": 200
+                }
+            ]
         },
         {
             "resource": "path.png",
