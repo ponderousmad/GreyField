@@ -112,18 +112,20 @@ var FIELD = (function () {
         this.shipMass = shipMass;
         this.particleMass = particleMass;
         this.particleVelocity = particleVelocity;
-        
+
         //variables:
         this.particleCount = particleCount;
         this.pos = position;
         this.vel = new R2.V(0, 0);
-        this.calcEnergy(space);
         this.radius = 5;
         this.usesFuel = true;
+
+        this.calculateMass();
+        this.calcEnergy(space);
     }
 
-    Ship.prototype.mass = function () {
-        return this.shipMass + this.particleCount * this.particleMass;
+    Ship.prototype.calculateMass = function () {
+        this.mass = this.shipMass + this.particleCount * this.particleMass;
     };
 
     Ship.prototype.calcEnergy = function(space){
@@ -137,11 +139,12 @@ var FIELD = (function () {
         }
         this.vel.addScaled(
             new R2.V(Math.cos(theta), Math.sin(theta)),
-            this.particleVelocity * this.particleMass / this.mass()
+            this.particleVelocity * this.particleMass / this.mass
         );
-        this.calcEnergy(space);
         
         this.particleCount -= 1;
+        this.calculateMass();
+        this.calcEnergy(space);
 
         var velocity = new R2.V(Math.cos(theta), Math.sin(theta));
         velocity.scale(this.vel.length() - this.particleVelocity);
@@ -181,9 +184,9 @@ var FIELD = (function () {
                 distance = R2.addVectors(this.pos, fuel.pos.scaled(-1));
             if(distance.lengthSq() < this.size * this.size + fuel.size * fuel.size) {
                 space.fuels.splice(i,1);
-                this.mass += fuel.mass;
                 this.particleCount += fuel.mass/this.particleMass;
                 this.particleVelocity += fuel.boost;
+                this.calculateMass();
                 this.energy += fuel.mass * Math.max(space.closestPotential(new R2.V(this.pos.y,this.pos.x)), space.closestPotential(new R2.V(fuel.pos.y,fuel.pos.x))) * space.gravity;
             }
         }
@@ -194,14 +197,14 @@ var FIELD = (function () {
         } else {
             if(this.vel.length() > 0){
                 this.vel.normalize();
-                this.vel.scale(Math.sqrt(2 * (this.energy - finalPotential)));
+                this.vel.scale(Math.sqrt(2 * (this.energy - finalPotential) / this.mass));
             }
         }
         //console.log("energy = ",0.5 * this.vel.lengthSq() + space.closestPotential(new R2.V(this.pos.y,this.pos.x)) * space.gravity);
     }
 
     function Particle(mass,position,velocity, space) {
-        this.mass = function () {return mass; };
+        this.mass = mass;
         this.pos = position;
         this.vel = velocity;
         this.radius = 2;
