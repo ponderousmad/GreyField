@@ -59,6 +59,28 @@
             "resource": "spiral.png",
             "shipX": 100,
             "shipY": 100
+        },
+        {
+            "resource": "exploding_wall.png",
+            "shipX": 85,
+            "shipY": 105,
+            "shipMass": 10,
+            "particleCount":2,
+            "particleVelocity":0.5,
+            "parts": [
+                {
+                    "type": "bomb",
+                    "range": 50,
+                    "size": 10,
+                    "x": 210,
+                    "y": 180
+                },
+                {
+                    "type": "exit",
+                    "x": 440,
+                    "y": 260
+                }
+            ]
         }
     ]
 }

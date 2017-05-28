@@ -130,6 +130,7 @@ var FIELD = (function () {
                 this.exits.splice(i,1);
                 this.isLevelCompleted = true;
                 ship.energy = -1;
+                ship.particleCount = 0;
             }
         }
     }
@@ -266,7 +267,7 @@ var FIELD = (function () {
         
         this.usesFuel = false;
         this.endsLevel = false;
-        this.losesGameOnExplosion = true;
+        this.losesGameOnExplosion = false;
     }
 
     function Fuel(position, particles, boost, size) {
