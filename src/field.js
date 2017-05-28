@@ -356,7 +356,7 @@ var FIELD = (function () {
             }
         }
         //space.addEffect(this.pos,"bomb", this.explodesWhite ? 1 : -1);
-        space.addEffect(this.pos,"wave", this.explodesWhite ? 1 : -1);
+        //space.addEffect(this.pos,"wave", this.explodesWhite ? 1 : -1);
 
         space.hasPotentialUpdated = true;
         explodeSound.play();
