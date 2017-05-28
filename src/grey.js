@@ -26,8 +26,12 @@ var GREY = (function () {
         return {
             pos: pos,
             save: function () {
-                var saveData = {}
-                if (data)
+                var saveData = {
+                    particles: particles
+                }
+                if (boost) {
+                    saveData.boost = true;
+                }
                 return savePart(saveData, "fuel", pos, size);
             },
             build: function (space) {
@@ -37,7 +41,7 @@ var GREY = (function () {
     }
 
     function makeBomb(data, pos, size) {
-        var type = data.type == "positive";
+        var type = data.type == "white";
             range = parseFloat(data.range);
         if (isNaN(range)) {
             range = null;
@@ -45,6 +49,12 @@ var GREY = (function () {
         return {
             pos: pos,
             save: function () {
+                var saveData = {
+                    type: type ? "white" : "black"
+                }
+                if (range) {
+                    saveData.range = range;
+                }
                 return savePart({}, "bomb", pos);
             },
             build: function (space) {
