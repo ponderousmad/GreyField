@@ -1,0 +1,40 @@
+{
+    "levels": [
+        {
+            "resource": "simple.png",
+            "shipX": 150,
+            "shipY": 200,
+            "particleCount": 2
+        },
+        {
+            "resource": "normalspace.png",
+            "shipX": 50,
+            "shipY": 50
+        },
+        {
+            "resource": "grey_square.png",
+            "shipX": 80,
+            "shipY": 50
+        },
+        {
+            "resource": "wells.png",
+            "shipX": 100,
+            "shipY": 100
+        },
+        {
+            "resource": "ring.png",
+            "shipX": 320,
+            "shipY": 200
+        },
+        {
+            "resource": "cloud.png",
+            "shipX": 100,
+            "shipY": 100
+        },
+        {
+            "resource": "spiral.png",
+            "shipX": 100,
+            "shipY": 100
+        }
+    ]
+}

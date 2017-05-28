@@ -30,30 +30,32 @@ var GREY = (function () {
         this.maximize = true;
         this.updateInDraw = true;
 
-        this.levels = [
-            new Level({resource: "simple.png", shipX: 150, shipY: 200, particleCount: 2 }),
-            new Level({resource: "normalspace.png", shipX: 50, shipY: 50 }),
-            new Level({resource: "grey_square.png", shipX: 80, shipY: 50 }),
-            new Level({resource: "wells.png", shipX: 100, shipY: 100 }),
-            new Level({resource: "ring.png", shipX: 320, shipY: 200 }),
-            new Level({resource: "cloud.png", shipX: 100, shipY: 100 }),
-            new Level({resource: "spiral.png", shipX: 100, shipY: 100 })
-        ];
+        this.levels = null;
 
         var self = this;
-
-        this.batch = new BLIT.Batch("images/", function () {
-            self.loadLevel(0);
-        });
-        for (var l = 0; l < this.levels.length; ++l) {
-            this.levels[l].batch(this.batch);
-        }
-        this.batch.commit();
 
         this.space = null;
         this.level = null;
 
-        this.setupControls();
+        IO.downloadJSON("levels.json", function (data) {
+            self.loadLevelData(data);
+        });
+    }
+
+    SpaceView.prototype.loadLevelData = function (data) {
+        this.levels = [];
+
+        var self = this;
+        this.batch = new BLIT.Batch("images/", function () {
+            self.loadLevel(0);
+            self.setupControls();
+        });
+        for (var l = 0; l < data.levels.length; ++l) {
+            var level = new Level(data.levels[l]);
+            this.levels.push(level);
+            level.batch(this.batch);
+        }
+        this.batch.commit();
     }
 
     SpaceView.prototype.setupControls = function () {
