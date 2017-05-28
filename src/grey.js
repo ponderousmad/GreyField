@@ -15,7 +15,7 @@ var GREY = (function () {
                 return savePart({}, "exit", pos);
             },
             build: function (space) {
-
+                space.addExit(pos, size);
             }
         }
     }
@@ -41,7 +41,7 @@ var GREY = (function () {
     }
 
     function makeBomb(data, pos, size) {
-        var type = data.type == "white";
+        var type = data.type == "white",
             range = parseFloat(data.range);
         if (isNaN(range)) {
             range = null;
@@ -58,8 +58,21 @@ var GREY = (function () {
                 return savePart({}, "bomb", pos);
             },
             build: function (space) {
-                space.addBomb(pos, type, range, size);
+                space.addBomb(pos, type, size, range);
             }
+        }
+    }
+    
+    function loadPart(data) {
+        var pos = new R2.V(parseFloat(data.x), parseFloat(data.y)),
+            size = parseFloat(data.size);
+        if (isNaN(size)) {
+            size = null;
+        }
+        switch (data.type) {
+            case "exit": return makeExit(data, pos, size);
+            case "fuel": return makeFuel(data, pos, size);
+            case "bomb": return makeBomb(data, pos, size);
         }
     }
 
@@ -73,30 +86,10 @@ var GREY = (function () {
         this.particleMass = data.particleMass;
         this.particleVelocity = data.particleVelocity;
 
-        this.exits = [];
-        this.fuel = [];
-        this.bombs = [];
+        this.parts = [];
         if (data.parts) {
             for (var p = 0; p < data.parts.length; ++p) {
-                var partData = data.parts[p],
-                    pos = new R2.V(parseFloat(partData.x), parseFloat(partData.y)),
-                    size = parseFloat(partData.size);
-                if (isNaN(size)) {
-                    size = null;
-                }
-                switch (partData.type) {
-                    case "exit": {
-                        this.exits.push[makeExit(partData, pos, size)];
-                        break;
-                    }
-                    case "fuel": {
-                        this.fuel.push[makeFuel(partData, pos, size)];
-                        break;
-                    }
-                    case "bomb": {
-                        this.bombs.push[makeBomb(partData, pos, size)];
-                    }
-                }
+                this.parts.push(loadPart(data.parts[p]))
             }
         }
     }
@@ -125,14 +118,8 @@ var GREY = (function () {
 
         var parts = [];
 
-        for (var e = 0; e < this.exits.length; ++e) {
-            parts.push(this.exits[e].save());
-        }
-        for (var f = 0; f < this.fuel.length; ++f) {
-            parts.push(this.fuel[f].save());
-        }
-        for (var b = 0; b < this.bombs.length; ++b) {
-            parts.push(this.bombs[b].save());
+        for (var p = 0; e < this.parts.length; ++p) {
+            parts.push(this.parts[p].save());
         }
 
         return data;
@@ -176,6 +163,8 @@ var GREY = (function () {
 
         this.whiteBombImage = this.batch.load("white_bomb.png");
         this.blackBombImage = this.batch.load("black_bomb.png");
+        this.fuelImage = this.batch.load("fuel.png");
+        this.exitImage = this.batch.load("exit.png");
 
         IO.downloadJSON("levels.json", function (data) {
             self.loadLevelData(data);
@@ -274,6 +263,10 @@ var GREY = (function () {
         this.potentialContext.drawImage(image, 0, 0);
         this.xGrad = null;
         this.yGrad = null;
+
+        for (var p = 0; p < this.level.parts.length; ++p) {
+            this.level.parts[p].build(space);
+        }
         this.space = space;
     }
 
@@ -343,6 +336,16 @@ var GREY = (function () {
                 var bomb = this.space.bombs[b],
                     bombImage = bomb.explodesWhite ? this.whiteBombImage : this.blackBombImage;
                 BLIT.draw(context, bombImage, bomb.pos.x, bomb.pos.y, BLIT.ALIGN.Center);
+            }
+
+            for (var f = 0; f < this.space.fuels.length; ++f) {
+                var fuel = this.space.fuels[f];
+                BLIT.draw(context, this.fuelImage, fuel.pos.x, fuel.pos.y, BLIT.ALIGN.Center);
+            }
+
+            for (var e = 0; e < this.space.exits.length; ++e) {
+                var exit = this.space.exits[e];
+                BLIT.draw(context, this.exitImage, exit.pos.x, exit.pos.y, BLIT.ALIGN.Center);
             }
         }
         context.restore();
