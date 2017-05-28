@@ -13,6 +13,7 @@ var FIELD = (function () {
         this.grads = new Float32Array(size * 2);
         this.particles = [];
         this.gravity = gravity || 0.005;
+        this.fuels = [];
         this.ship = null;
     }
 
@@ -39,7 +40,10 @@ var FIELD = (function () {
         if(x >= 0 && x < this.width && y >= 0 && y < this.height) {
             return this.potentials[this.scalarIndex(x, y)];
         } else {
-            return 0.01*Math.max(-x,-y,y-this.height,x-this.width) + 1;
+            //return 0.01*Math.max(-x,-y,y-this.height,x-this.width) + 1;
+            var x_off = Math.max(0,-x,x-this.width+1),
+                y_off = Math.max(0,-y,y-this.height+1);
+            return 0.01*Math.sqrt(x_off*x_off + y_off*y_off) + 1;
         }
     }
 
@@ -48,26 +52,26 @@ var FIELD = (function () {
             B = T+1, // bottom
             L = Math.floor(pos.x), // left
             R = L+1, // right
-            TL = this.potential(T,L),
-            TR = this.potential(T,R),
-            BL = this.potential(B,L),
-            BR = this.potential(B,R),
+            TL = this.potential(L,T),
+            TR = this.potential(R,T),
+            BL = this.potential(L,B),
+            BR = this.potential(R,B),
             topPot = lerp(TL,TR,pos.x),
             botPot = lerp(BL,BR,pos.x);
         return lerp(topPot,botPot,pos.y);
     }
 
     Space.prototype.closestGradient = function(pos) {
-        var T = Math.floor(pos.x), // top
+        var T = Math.floor(pos.y), // top
             B = T+1, // bottom
-            L = Math.floor(pos.y), // left
+            L = Math.floor(pos.x), // left
             R = L+1, // right
-            TL = this.potential(T,L),
-            TR = this.potential(T,R),
-            BL = this.potential(B,L),
-            BR = this.potential(B,R),
-            y_grad = lerp(TL-TR,BL-BR,pos.x) * this.gravity,
-            x_grad = lerp(TR-BR,TL-BL,pos.y) * this.gravity;
+            TL = this.potential(L,T),
+            TR = this.potential(R,T),
+            BL = this.potential(L,B),
+            BR = this.potential(R,B),
+            x_grad = lerp(TL-TR,BL-BR,pos.x) * this.gravity,
+            y_grad = lerp(TR-BR,TL-BL,pos.y) * this.gravity;
         return new R2.V(x_grad,y_grad);
     }
 
@@ -115,20 +119,25 @@ var FIELD = (function () {
         this.shipMass = shipMass;
         this.particleMass = particleMass;
         this.particleVelocity = particleVelocity;
-        
+
         //variables:
         this.particleCount = particleCount;
         this.pos = position;
         this.vel = new R2.V(0, 0);
+        this.radius = 5;
+        this.usesFuel = true;
+
+        this.calculateMass();
         this.calcEnergy(space);
     }
 
-    Ship.prototype.mass = function () {
-        return this.shipMass + this.particleCount * this.particleMass;
+    Ship.prototype.calculateMass = function () {
+        this.mass = this.shipMass + this.particleCount * this.particleMass;
     };
 
     Ship.prototype.calcEnergy = function(space){
-        this.energy = 0.5 * this.vel.lengthSq() + space.closestPotential(new R2.V(this.pos.y,this.pos.x)) * space.gravity;
+        this.energy = 0.5 * this.vel.lengthSq() + space.closestPotential(this.pos) * space.gravity;
+        this.energy *= this.mass;
     }
     
     Ship.prototype.shoot = function (theta, space) {
@@ -137,11 +146,12 @@ var FIELD = (function () {
         }
         this.vel.addScaled(
             new R2.V(Math.cos(theta), Math.sin(theta)),
-            this.particleVelocity * this.particleMass / this.mass()
+            this.particleVelocity * this.particleMass / this.mass
         );
-        this.calcEnergy(space);
         
         this.particleCount -= 1;
+        this.calculateMass();
+        this.calcEnergy(space);
 
         var velocity = new R2.V(Math.cos(theta), Math.sin(theta));
         velocity.scale(this.vel.length() - this.particleVelocity);
@@ -175,23 +185,45 @@ var FIELD = (function () {
             this.timestep(space,0.5*time);
             this.timestep(space,0.5*time);
         }
-        var finalPotential = space.closestPotential(new R2.V(this.pos.y,this.pos.x)) * space.gravity;
+
+        for(var i = 0; i < space.fuels.length; i++){
+            var fuel = space.fuels[i],
+                distance = R2.addVectors(this.pos, fuel.pos.scaled(-1));
+            if(distance.lengthSq() < this.size * this.size + fuel.size * fuel.size) {
+                space.fuels.splice(i,1);
+                this.particleCount += fuel.particles;
+                this.particleVelocity += fuel.boost;
+                this.calculateMass();
+                this.energy += fuel.particles  * this.particleMass * Math.max(space.closestPotential(this.pos), space.closestPotential(fuel.pos)) * space.gravity;
+            }
+        }
+
+        var finalPotential = this.mass * space.closestPotential(this.pos) * space.gravity;
         if(finalPotential > this.energy) {
             this.vel.scale(0);
         } else {
             if(this.vel.length() > 0){
                 this.vel.normalize();
-                this.vel.scale(Math.sqrt(2 * (this.energy - finalPotential)));
+                this.vel.scale(Math.sqrt(2 * (this.energy - finalPotential) / this.mass));
             }
         }
         //console.log("energy = ",0.5 * this.vel.lengthSq() + space.closestPotential(new R2.V(this.pos.y,this.pos.x)) * space.gravity);
     }
 
     function Particle(mass,position,velocity, space) {
-        this.mass = function () {return mass; };
+        this.mass = mass;
         this.pos = position;
         this.vel = velocity;
-        this.energy = 0.5 * this.vel.lengthSq() + space.closestPotential(new R2.V(this.pos.y,this.pos.x)) * space.gravity;
+        this.radius = 2;
+        this.energy = 0.5 * this.vel.lengthSq() + space.closestPotential(this.pos) * space.gravity;
+        this.usesFuel = false;
+    }
+
+    function Fuel(particles,position,boost) {
+        this.pos = position;
+        this.particles = particles;
+        this.size = 5;
+        this.boost = boost || 0;
     }
 
     Particle.prototype.timestep = Ship.prototype.timestep;
