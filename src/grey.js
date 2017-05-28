@@ -504,8 +504,8 @@ var GREY = (function () {
 
     SpaceView.prototype.draw = function (context, width, height) {
         context.clearRect(0, 0, width, height);
-        context.save();
         if (this.space) {
+            context.save();
             context.translate(
                 centerOffset(width, this.space.width),
                 centerOffset(height, this.space.height)
@@ -547,8 +547,11 @@ var GREY = (function () {
                 var exit = this.space.exits[e];
                 BLIT.draw(context, this.exitImage, exit.pos.x, exit.pos.y, BLIT.ALIGN.Center, exit.size*2, exit.size*2);
             }
+            context.restore();
+            context.fillStyle = "black";
+            context.font = '48px serif';
+            context.fillText(". ".repeat(this.space.ship.particleCount), 10, 20);
         }
-        context.restore();
     };
 
     function start() {
