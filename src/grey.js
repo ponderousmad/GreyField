@@ -189,7 +189,7 @@ var GREY = (function () {
                 self.loadLevel(parseInt(self.levelSelect.value));
             }, true);
             for (var l = 0, self = this ; l < this.levels.length; ++l) {
-                self.levelSelect.appendChild(new Option(this.levels[l].resource.slice(0, -4), l));
+                self.levelSelect.appendChild(new Option(l + ": " + this.levels[l].resource.slice(0, -4), l));
             }
         }
 
