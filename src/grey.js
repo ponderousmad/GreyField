@@ -36,6 +36,8 @@ var GREY = (function () {
 
         this.space = null;
         this.level = null;
+        this.potentialCanvas = document.createElement('canvas');
+        this.potentialContext = this.potentialCanvas.getContext('2d');
 
         this.xGrad = null;
         this.yGrad = null;
@@ -130,6 +132,9 @@ var GREY = (function () {
             space.setPotential(x, y, r / IMPROC.BYTE_MAX);
         });
         this.level.setupShip(space);
+        this.potentialCanvas.width = image.width;
+        this.potentialCanvas.height = image.height;
+        this.potentialContext.drawImage(image, 0, 0);
         this.xGrad = null;
         this.yGrad = null;
         this.space = space;
@@ -163,7 +168,7 @@ var GREY = (function () {
             var xOffset = Math.floor((width - this.space.width) * 0.5),
                 yOffset = Math.floor((height - this.space.height) * 0.5);
             if (this.level) {
-                BLIT.draw(context, this.level.image, xOffset, yOffset, BLIT.ALIGN.TopLeft);
+                BLIT.draw(context, this.potentialCanvas, xOffset, yOffset, BLIT.ALIGN.TopLeft);
             }
 
             if (this.xGrad) {
