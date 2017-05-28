@@ -96,7 +96,9 @@ var FIELD = (function () {
     }
 
     Space.prototype.setPotential = function (x, y, value) {
-        this.potentials[this.scalarIndex(x, y)] = value;
+        if(x >= 0 && x < this.width && y >= 0 && y <this.height) {
+            this.potentials[this.scalarIndex(x, y)] = value;
+        }
     }
 
     Space.prototype.update = function(updateTime, stepCount, isShooting, shotAngle) {
@@ -234,8 +236,9 @@ var FIELD = (function () {
         this.calculateMass();
         this.calcEnergy(space);
 
-        var velocity = new R2.V(Math.cos(theta), Math.sin(theta));
-        velocity.scale(this.vel.length() - this.particleVelocity);
+        var velocity = new R2.V(-Math.cos(theta), -Math.sin(theta));
+        velocity.scale(this.particleVelocity);
+        velocity.add(this.vel);
         var newParticle = new Particle(this.particleMass, this.pos.clone(), velocity, space);
         newParticle.calcEnergy(space);
         space.particles.push(newParticle);
