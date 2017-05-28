@@ -37,6 +37,9 @@ var GREY = (function () {
         this.space = null;
         this.level = null;
 
+        this.xGrad = null;
+        this.yGrad = null;
+
         IO.downloadJSON("levels.json", function (data) {
             self.loadLevelData(data);
         });
@@ -68,6 +71,20 @@ var GREY = (function () {
                 self.levelSelect.appendChild(new Option(this.levels[l].resource.slice(0, -4), l));
             }
         }
+
+        var showGradients = document.getElementById("buttonShowGrads"),
+            self = this;
+        if (showGradients) {
+            showGradients.addEventListener("click", function (e) {
+                if (self.space) {
+                    self.xGrad = canvasMatching(self.level.image);
+                    self.yGrad = canvasMatching(self.level.image);
+
+                    drawGradient(self.space, self.xGrad, xGradToPixel);
+                    drawGradient(self.space, self.yGrad, yGradToPixel);
+                }
+            }, true);
+        }
     };
 
     function canvasMatching(image) {
@@ -98,11 +115,11 @@ var GREY = (function () {
     }
 
     function xGradToPixel(space, x, y) {
-        return gradToPixel(space.gradient(x, y).x);
+        return gradToPixel(space.closestGradient(new R2.V(x + 0.5, y + 0.5)).x / space.gravity);
     }
 
     function yGradToPixel(space, x, y) {
-        return gradToPixel(space.gradient(x, y).y);
+        return gradToPixel(space.closestGradient(new R2.V(x + 0.5, y + 0.5)).y / space.gravity);
     }
 
     SpaceView.prototype.loadLevel = function (index) {
@@ -112,15 +129,9 @@ var GREY = (function () {
         IMPROC.processImage(image, 0, 0, image.width, image.height, function (x, y, r, g, b, a) {
             space.setPotential(x, y, r / IMPROC.BYTE_MAX);
         });
-        space.computeGrads();
         this.level.setupShip(space);
-
-        this.xGrad = canvasMatching(image);
-        this.yGrad = canvasMatching(image);
-
-        drawGradient(space, this.xGrad, xGradToPixel);
-        drawGradient(space, this.yGrad, yGradToPixel);
-
+        this.xGrad = null;
+        this.yGrad = null;
         this.space = space;
     }
 
@@ -155,8 +166,12 @@ var GREY = (function () {
                 BLIT.draw(context, this.level.image, xOffset, yOffset, BLIT.ALIGN.TopLeft);
             }
 
-            BLIT.draw(context, this.xGrad, xOffset + this.space.width, yOffset, BLIT.ALIGN.TopLeft);
-            BLIT.draw(context, this.yGrad, xOffset, yOffset + this.space.height, BLIT.ALIGN.TopLeft);
+            if (this.xGrad) {
+                BLIT.draw(context, this.xGrad, xOffset + this.space.width, yOffset, BLIT.ALIGN.TopLeft);
+            }
+            if (this.yGrad) {
+                BLIT.draw(context, this.yGrad, xOffset, yOffset + this.space.height, BLIT.ALIGN.TopLeft);
+            }
 
             var shipPos = this.space.ship.pos;
             context.fillStyle = "green";

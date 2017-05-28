@@ -10,7 +10,6 @@ var FIELD = (function () {
         this.height = height;
         var size = width * height;
         this.potentials = new Float32Array(size);
-        this.grads = new Float32Array(size * 2);
         this.particles = [];
         this.gravity = gravity || 0.005;
         this.fuels = [];
@@ -80,28 +79,6 @@ var FIELD = (function () {
 
     Space.prototype.setPotential = function (x, y, value) {
         this.potentials[this.scalarIndex(x, y)] = value;
-    }
-
-    Space.prototype.gradient = function (x, y) {
-        var index = this.gradIndex(x, y);
-        return new R2.V(this.grads[index], this.grads[index+1]);
-    }
-
-    Space.prototype.setGradient = function (x, y, value) {
-        var index = this.gradIndex(x, y);
-        this.grads[index] = value.x;
-        this.grads[index + 1] = value.y;
-    }
-
-    Space.prototype.computeGrads = function() {
-        for (var x = 0; x < this.width; x++) {
-            for (var y = 0; y < this.height; y++) {
-                var dx = this.potential(x-1,y)-this.potential(x+1,y),
-                    dy = this.potential(x,y-1)-this.potential(x,y+1);
-                this.setGradient(x,y,this.closestPotential(new R2.V(x,y)));
-            }
-        }
-
     }
 
     Space.prototype.update = function(updateTime, stepCount, isShooting, shotAngle) {
