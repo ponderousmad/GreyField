@@ -536,7 +536,7 @@ var GREY = (function () {
             centerOffset(width, this.space.width),
             centerOffset(height, this.space.height)
         );
-        if (this.level && this.potentialCanvas) {
+        if (this.level) {
             BLIT.draw(context, this.potentialCanvas, -this.space.border, -this.space.border, BLIT.ALIGN.TopLeft);
         }
 
