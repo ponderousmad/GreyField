@@ -7,6 +7,13 @@
             "particleCount": 2
         },
         {
+            "resource": "path.png",
+            "shipX": 115,
+            "shipY": 195,
+            "particleVelocity": 0.2,
+            "particleMass": 4
+        },
+        {
             "resource": "normalspace.png",
             "shipX": 50,
             "shipY": 50
