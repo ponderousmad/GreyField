@@ -407,7 +407,7 @@ var FIELD = (function () {
             dist = R2.pointDistance(pos,this.pos),
             wavePeak = waveSpeed * this.elapsed,
             waveWidth = (waveSpeed * 0.1) * this.elapsed;
-        return Math.abs(dist - wavePeak) > waveWidth ? 0 : Math.cos( (dist - wavePeak) / waveWidth) * (this.remaining / this.effectTypes[this.type][0]);
+        return Math.abs(dist - wavePeak) > waveWidth ? 0 : Math.cos( (Math.PI/2) * (dist - wavePeak) / waveWidth) * (this.remaining / this.effectTypes[this.type][0]);
     }
 
     function Planet(position, scale, gravityExponent){
