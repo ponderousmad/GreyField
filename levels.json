@@ -41,29 +41,64 @@
             ]
         },
         {
-            "resource": "wells.png",
-            "shipX": 100,
-            "shipY": 100
-        },
-        {
             "resource": "ring.png",
             "shipX": 320,
             "shipY": 200,
             "parts": [
                 {
                     "bombType": "black",
-                    "range": 50,
                     "type": "bomb",
                     "x": 320,
                     "y": 290,
-                    "size": 10
+                    "size": null
+                },
+                {
+                    "type": "exit",
+                    "x": 107,
+                    "y": 107
+                },
+                {
+                    "type": "exit",
+                    "x": 107,
+                    "y": 302
+                },
+                {
+                    "type": "exit",
+                    "x": 525,
+                    "y": 107
+                },
+                {
+                    "type": "exit",
+                    "x": 525,
+                    "y": 107
+                },
+                {
+                    "type": "exit",
+                    "x": 525,
+                    "y": 290
                 }
             ]
         },
         {
             "resource": "cloud.png",
             "shipX": 100,
-            "shipY": 100
+            "shipY": 100,
+            "particleCount": 3,
+            "particleVelocity": 0.4,
+            "parts": [
+                {
+                    "bombType": "black",
+                    "type": "bomb",
+                    "x": 290,
+                    "y": 200,
+                    "size": null
+                },
+                {
+                    "type": "exit",
+                    "x": 360,
+                    "y": 200
+                }
+            ]
         },
         {
             "resource": "spiral.png",
@@ -76,7 +111,7 @@
                     "type": "planet",
                     "x": 310,
                     "y": 190,
-                    "size": 20
+                    "size": 25
                 },
                 {
                     "type": "exit",
@@ -106,6 +141,68 @@
                     "type": "exit",
                     "x": 440,
                     "y": 260
+                }
+            ]
+        },
+        {
+            "resource": "wells.png",
+            "shipX": 100,
+            "shipY": 100,
+            "particleVelocity": 0.247,
+            "parts": [
+                {
+                    "type": "exit",
+                    "x": 570,
+                    "y": 140
+                },
+                {
+                    "bombType": "black",
+                    "type": "bomb",
+                    "x": 300,
+                    "y": 200,
+                    "size": null
+                },
+                {
+                    "particles": 6,
+                    "type": "fuel",
+                    "x": 260,
+                    "y": 360,
+                    "size": null
+                },
+                {
+                    "bombType": "white",
+                    "type": "bomb",
+                    "x": 20,
+                    "y": 20,
+                    "size": null
+                },
+                {
+                    "particles": 6,
+                    "type": "fuel",
+                    "x": 415,
+                    "y": 130,
+                    "size": null
+                },
+                {
+                    "particles": 6,
+                    "type": "fuel",
+                    "x": 488,
+                    "y": 283,
+                    "size": null
+                },
+                {
+                    "particles": 6,
+                    "type": "fuel",
+                    "x": 365,
+                    "y": 252,
+                    "size": null
+                },
+                {
+                    "particles": 6,
+                    "type": "fuel",
+                    "x": 94,
+                    "y": 334,
+                    "size": null
                 }
             ]
         },
