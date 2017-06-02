@@ -257,8 +257,32 @@
         },
         {
             "resource": "spiralEdged.png",
-            "shipX": 320,
-            "shipY": 200
+            "shipX": 534,
+            "shipY": 200,
+            "gravity": 0.05,
+            "shipMass": 2,
+            "particleVelocity": 0.4,
+            "parts": [
+                {
+                    "type": "exit",
+                    "x": 50,
+                    "y": 50
+                },
+                {
+                    "particles": 6,
+                    "type": "fuel",
+                    "x": 350,
+                    "y": 210,
+                    "size": 10
+                },
+                {
+                    "particles": 6,
+                    "type": "fuel",
+                    "x": 475,
+                    "y": 375,
+                    "size": 10
+                }
+            ]
         },
         {
             "resource": "white.png",
