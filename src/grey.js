@@ -202,6 +202,9 @@ var GREY = (function () {
         IO.downloadJSON("levels.json", function (data) {
             self.loadLevelData(data);
         });
+
+        this.RESET_HEIGHT = 15;
+        this.RESET_WIDTH = 100;
     }
 
     SpaceView.prototype.loadLevelData = function (data) {
@@ -491,6 +494,7 @@ var GREY = (function () {
         if (this.space) {
             var fire = false,
                 fireAngle = 0,
+                pressedReset = false,
                 xOffset = centerOffset(width, this.space.width),
                 yOffset = centerOffset(height, this.space.height);
 
@@ -502,6 +506,10 @@ var GREY = (function () {
                     dx = levelX - shipPos.x,
                     dy = levelY - shipPos.y;
                 fireAngle = Math.atan2(dy, dx) + Math.PI;
+
+                if (pointer.primary.x > (width - this.RESET_WIDTH) && pointer.primary.y > (height - 45)) {
+                    pressedReset = true;
+                }
             }
             if (this.cursorDisplay) {
                 var loc = pointer.mouse.location;
@@ -519,7 +527,7 @@ var GREY = (function () {
                 if (this.levelSelect) {
                     this.levelSelect.value = this.levelIndex;
                 }
-            } else if (this.space.isLevelLost || keyboard.wasAsciiPressed("R")) {
+            } else if (this.space.isLevelLost || keyboard.wasAsciiPressed("R") || pressedReset) {
                 this.loadLevel(this.levelIndex);
             }
         }
@@ -579,6 +587,9 @@ var GREY = (function () {
         context.fillStyle = "black";
         context.font = '48px serif';
         context.fillText(". ".repeat(this.space.ship.particleCount), 10, 20);
+
+        context.font = '28px serif';
+        context.fillText("RESET", width - this.RESET_WIDTH, height - this.RESET_HEIGHT);
     };
 
     function start() {
