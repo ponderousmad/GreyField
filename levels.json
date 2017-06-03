@@ -41,6 +41,30 @@
             ]
         },
         {
+            "resource": "exploding_wall.png",
+            "shipX": 85,
+            "shipY": 105,
+            "gravity": 0.051,
+            "shipMass": 10,
+            "particleCount": 2,
+            "particleVelocity": 0.5,
+            "parts": [
+                {
+                    "bombType": "black",
+                    "range": 50,
+                    "type": "bomb",
+                    "x": 210,
+                    "y": 180,
+                    "size": 10
+                },
+                {
+                    "type": "exit",
+                    "x": 440,
+                    "y": 260
+                }
+            ]
+        },
+        {
             "resource": "ring.png",
             "shipX": 320,
             "shipY": 200,
@@ -156,30 +180,6 @@
                     "x": 320,
                     "y": 300,
                     "size": 10
-                }
-            ]
-        },
-        {
-            "resource": "exploding_wall.png",
-            "shipX": 85,
-            "shipY": 105,
-            "gravity": 0.051,
-            "shipMass": 10,
-            "particleCount": 2,
-            "particleVelocity": 0.5,
-            "parts": [
-                {
-                    "bombType": "black",
-                    "range": 50,
-                    "type": "bomb",
-                    "x": 210,
-                    "y": 180,
-                    "size": 10
-                },
-                {
-                    "type": "exit",
-                    "x": 440,
-                    "y": 260
                 }
             ]
         },
