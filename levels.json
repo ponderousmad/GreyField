@@ -31,6 +31,7 @@
             "shipX": 150,
             "shipY": 200,
             "particleCount": 2,
+            "particleVelocity": 0.3,
             "parts": [
                 {
                     "type": "exit",
@@ -61,8 +62,15 @@
             "parts": [
                 {
                     "type": "exit",
-                    "x": 390,
+                    "x": 490,
                     "y": 200
+                },
+                {
+                    "bombType": "black",
+                    "type": "bomb",
+                    "x": 390,
+                    "y": 200,
+                    "size": 10
                 }
             ]
         },
