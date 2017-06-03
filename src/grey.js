@@ -561,7 +561,7 @@ var GREY = (function () {
         for (var b = 0; b < this.space.bombs.length; ++b) {
             var bomb = this.space.bombs[b],
                 bombImage = bomb.explodesWhite ? this.whiteBombImage : this.blackBombImage,
-                bombSize = bomb.size * 4;
+                bombSize = bomb.size * 2;
             BLIT.draw(context, bombImage, bomb.pos.x, bomb.pos.y, BLIT.ALIGN.Center, bombSize, bombSize);
         }
 

@@ -51,7 +51,7 @@
                     "type": "bomb",
                     "x": 320,
                     "y": 290,
-                    "size": 5
+                    "size": 10
                 },
                 {
                     "type": "exit",
@@ -93,7 +93,7 @@
                     "type": "bomb",
                     "x": 290,
                     "y": 200,
-                    "size": 5
+                    "size": 10
                 },
                 {
                     "type": "exit",
@@ -199,7 +199,7 @@
                     "type": "bomb",
                     "x": 300,
                     "y": 200,
-                    "size": 5
+                    "size": 10
                 },
                 {
                     "particles": 6,
@@ -213,7 +213,7 @@
                     "type": "bomb",
                     "x": 20,
                     "y": 20,
-                    "size": 5
+                    "size": 10
                 },
                 {
                     "particles": 6,
