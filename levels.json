@@ -28,8 +28,8 @@
         },
         {
             "resource": "path_edited.png",
-            "shipX": 115,
-            "shipY": 195,
+            "shipX": 92,
+            "shipY": 162,
             "particleMass": 4,
             "particleVelocity": 0.2,
             "parts": [
