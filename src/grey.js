@@ -546,6 +546,8 @@ var GREY = (function () {
             BLIT.draw(context, this.yGrad, 0, this.space.height, BLIT.ALIGN.TopLeft);
         }
 
+        context.imageSmoothingQuality = "high";
+
         var shipPos = this.space.ship.pos,
             shipSize = this.space.ship.size * 2;
         BLIT.draw(context, this.shipImage, shipPos.x, shipPos.y, BLIT.ALIGN.Center, shipSize, shipSize);
@@ -558,8 +560,9 @@ var GREY = (function () {
 
         for (var b = 0; b < this.space.bombs.length; ++b) {
             var bomb = this.space.bombs[b],
-                bombImage = bomb.explodesWhite ? this.whiteBombImage : this.blackBombImage;
-            BLIT.draw(context, bombImage, bomb.pos.x, bomb.pos.y, BLIT.ALIGN.Center);
+                bombImage = bomb.explodesWhite ? this.whiteBombImage : this.blackBombImage,
+                bombSize = bomb.size * 4;
+            BLIT.draw(context, bombImage, bomb.pos.x, bomb.pos.y, BLIT.ALIGN.Center, bombSize, bombSize);
         }
 
         for (var f = 0; f < this.space.fuels.length; ++f) {
