@@ -36,7 +36,7 @@ var GREY = (function () {
             function () {
                 var saveData = {
                     particles: particles
-                }
+                };
                 if (boost) {
                     saveData.boost = true;
                 }
@@ -58,7 +58,7 @@ var GREY = (function () {
             function () {
                 var saveData = {
                     bombType: isWhite ? "white" : "black"
-                }
+                };
                 if (range) {
                     saveData.range = range;
                 }
@@ -79,7 +79,7 @@ var GREY = (function () {
         return makePart(data, pos,
             function () {
                 var saveData = {
-                }
+                };
                 if (exponent) {
                     saveData.exponent = exponent;
                 }
@@ -118,7 +118,7 @@ var GREY = (function () {
         this.parts = [];
         if (data.parts) {
             for (var p = 0; p < data.parts.length; ++p) {
-                this.parts.push(loadPart(data.parts[p]))
+                this.parts.push(loadPart(data.parts[p]));
             }
         }
     }
@@ -153,7 +153,7 @@ var GREY = (function () {
             data.parts = parts;
         }
         return data;
-    }
+    };
 
     Level.prototype.setupShip = function (space) {
         space.setupShip(
@@ -187,7 +187,6 @@ var GREY = (function () {
         this.xGrad = null;
         this.yGrad = null;
 
-        var self = this;
         this.batch = new BLIT.Batch("images/", function () {
             self.loadLevel(0);
             self.setupControls();
@@ -214,7 +213,7 @@ var GREY = (function () {
             level.batch(this.batch);
         }
         this.batch.commit();
-    }
+    };
 
     SpaceView.prototype.setupControls = function () {
         var showGradients = document.getElementById("buttonShowGrads"),
@@ -481,7 +480,7 @@ var GREY = (function () {
         if (updateEditors) {
             this.updateLevelEditors();
         }
-    }
+    };
 
     function centerOffset(outer, inner) {
         return Math.floor((outer - inner) * 0.5);
