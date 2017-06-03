@@ -1,7 +1,60 @@
 {
     "levels": [
         {
-            "resource": "simple_edited.png",
+            "resource": "tutorial1.png",
+            "shipX": 261,
+            "shipY": 136,
+            "particleCount": 2,
+            "parts": [
+                {
+                    "type": "exit",
+                    "x": 326,
+                    "y": 136
+                }
+            ]
+        },
+        {
+            "resource": "tutorial2.png",
+            "shipX": 150,
+            "shipY": 200,
+            "particleCount": 2,
+            "parts": [
+                {
+                    "type": "exit",
+                    "x": 390,
+                    "y": 200
+                }
+            ]
+        },
+        {
+            "resource": "tutorial3.png",
+            "shipX": 150,
+            "shipY": 200,
+            "particleCount": 2,
+            "parts": [
+                {
+                    "type": "exit",
+                    "x": 520,
+                    "y": 200
+                },
+                {
+                    "particles": 4,
+                    "type": "fuel",
+                    "x": 416,
+                    "y": 358,
+                    "size": null
+                },
+                {
+                    "particles": 6,
+                    "type": "fuel",
+                    "x": 320,
+                    "y": 200,
+                    "size": null
+                }
+            ]
+        },
+        {
+            "resource": "tutorial4.png",
             "shipX": 150,
             "shipY": 200,
             "particleCount": 2,
