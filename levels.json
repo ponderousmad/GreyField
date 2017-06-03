@@ -248,7 +248,8 @@
         {
             "resource": "final_level.png",
             "shipX": 100,
-            "shipY": 100
+            "shipY": 100,
+            "gravity": 0.02
         },
         {
             "resource": "normalspace.png",
